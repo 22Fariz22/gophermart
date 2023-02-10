@@ -26,9 +26,11 @@ type signInput struct {
 }
 
 func (h *Handler) SignUp(c *gin.Context) {
-	inp := new(signInput)
 	fmt.Println("auth-handler")
 	h.l.Info("auth-handler")
+
+	inp := new(signInput)
+
 	if err := c.BindJSON(inp); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return

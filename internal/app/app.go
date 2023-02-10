@@ -15,6 +15,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
@@ -33,7 +34,7 @@ func NewApp(cfg *config.Config) *App {
 
 	// Repository
 	//db, err := postgres.New(cfg.DATABASE_URI)
-	db, err := postgres.New(cfg.DATABASE_URI, postgres.MaxPoolSize(2))
+	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
@@ -69,7 +70,7 @@ func (a *App) Run() error {
 
 	// API endpoints
 	authMiddleware := delivery.NewAuthMiddleware(a.authUC)
-	api := router.Group("/api/user", authMiddleware)
+	api := router.Group("/api", authMiddleware)
 
 	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC)
 
