@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/gin-gonic/gin"
 )
@@ -8,6 +9,10 @@ import (
 func RegisterHTTPEndpoints(router *gin.Engine, uc auth.UseCase) {
 	h := NewHandler(uc)
 
-	router.POST("/api/user/register", h.SignUp)
-	router.POST("/api/user/login", h.SignIn)
+	authEndpoints := router.Group("")
+	{
+		authEndpoints.POST("/register", h.SignUp)
+		authEndpoints.POST("/login", h.SignIn)
+	}
+	fmt.Println("user-register-RegisterHTTPEndpoints: ")
 }

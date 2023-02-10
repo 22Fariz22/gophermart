@@ -38,6 +38,7 @@ func NewAuthUseCase(
 
 func (a *AuthUseCase) SignUp(ctx context.Context, username, password string) error {
 	pwd := sha1.New()
+	fmt.Println("uc-signUp()-username-passwors", username, password)
 	pwd.Write([]byte(password))
 	pwd.Write([]byte(a.hashSalt))
 
@@ -73,6 +74,7 @@ func (a *AuthUseCase) SignIn(ctx context.Context, username, password string) (st
 }
 
 func (a *AuthUseCase) ParseToken(ctx context.Context, accessToken string) (*entity.User, error) {
+	fmt.Println("auth-uc-ParseToken()")
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

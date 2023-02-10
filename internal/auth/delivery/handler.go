@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -23,7 +24,7 @@ type signInput struct {
 
 func (h *Handler) SignUp(c *gin.Context) {
 	inp := new(signInput)
-
+	fmt.Println("auth-handler")
 	if err := c.BindJSON(inp); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -33,6 +34,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	fmt.Println("handler-signUp-login&password:", inp.Login, inp.Password)
 	c.Status(http.StatusOK)
 }
 
