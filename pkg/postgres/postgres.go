@@ -1,15 +1,7 @@
 package postgres
 
 import (
-	"github.com/22Fariz22/gophermart/config"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
-)
-
-const (
-	_defaultMaxPoolSize  = 1
-	_defaultConnAttempts = 10
-	_defaultConnTimeout  = time.Second
 )
 
 // Postgres -.
@@ -17,10 +9,12 @@ type Postgres struct {
 	Pool *pgxpool.Pool
 }
 
-func New(cfg *config.Config) (*Postgres, error) {
-	pg := &Postgres{}
+func New(uri string) (*Postgres, error) {
 
-	return pg, nil
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//defer cancel()
+
+	return &Postgres{}, nil
 }
 
 func (p *Postgres) Close() {

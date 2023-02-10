@@ -12,5 +12,7 @@ func main() {
 		log.Fatalf("%s", err.Error())
 	}
 
-	app.Run(cfg)
+	app := app.NewApp(cfg)
+
+	app.Run()
 }
