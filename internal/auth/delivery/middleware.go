@@ -24,7 +24,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		log.Println("middleware-authHeader ==' ' ")
+		fmt.Println("middleware-Handle()-authHeader ==' ' ")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -41,7 +41,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	}
 
 	user, err := m.usecase.ParseToken(c.Request.Context(), headerParts[1])
-	log.Println("middleware-user:", user)
+	log.Println("auth-middleware-Handle()-user:", user)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {

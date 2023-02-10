@@ -14,6 +14,7 @@ type Handler struct {
 }
 
 func NewHandler(useCase auth.UseCase, l logger.Interface) *Handler {
+	fmt.Println("auth-NewHandler")
 	return &Handler{
 		useCase: useCase,
 		l:       l,
@@ -27,7 +28,6 @@ type signInput struct {
 
 func (h *Handler) SignUp(c *gin.Context) {
 	fmt.Println("auth-handler")
-	h.l.Info("auth-handler")
 
 	inp := new(signInput)
 

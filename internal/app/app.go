@@ -33,7 +33,6 @@ type App struct {
 func NewApp(cfg *config.Config) *App {
 
 	// Repository
-	//db, err := postgres.New(cfg.DATABASE_URI)
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
@@ -70,7 +69,7 @@ func (a *App) Run() error {
 
 	// API endpoints
 	authMiddleware := delivery.NewAuthMiddleware(a.authUC)
-	api := router.Group("/api", authMiddleware)
+	api := router.Group("/", authMiddleware)
 
 	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC)
 

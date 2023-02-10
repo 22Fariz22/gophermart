@@ -8,12 +8,13 @@ import (
 )
 
 func RegisterHTTPEndpoints(router *gin.Engine, uc auth.UseCase, l logger.Interface) {
+	fmt.Println("auth-register-RegisterHTTPEndpoints(): ")
+
 	h := NewHandler(uc, l)
 
-	authEndpoints := router.Group("/user")
+	authEndpoints := router.Group("/api/user")
 	{
-		authEndpoints.POST("/register/", h.SignUp)
+		authEndpoints.POST("/register", h.SignUp)
 		authEndpoints.POST("/login", h.SignIn)
 	}
-	fmt.Println("auth-register-RegisterHTTPEndpoints: ")
 }
