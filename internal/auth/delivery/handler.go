@@ -3,17 +3,20 @@ package delivery
 import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
+	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type Handler struct {
 	useCase auth.UseCase
+	l       logger.Interface
 }
 
-func NewHandler(useCase auth.UseCase) *Handler {
+func NewHandler(useCase auth.UseCase, l logger.Interface) *Handler {
 	return &Handler{
 		useCase: useCase,
+		l:       l,
 	}
 }
 
@@ -25,6 +28,7 @@ type signInput struct {
 func (h *Handler) SignUp(c *gin.Context) {
 	inp := new(signInput)
 	fmt.Println("auth-handler")
+	h.l.Info("auth-handler")
 	if err := c.BindJSON(inp); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return

@@ -10,6 +10,8 @@ import (
 	"github.com/22Fariz22/gophermart/internal/auth/usecase"
 	"github.com/22Fariz22/gophermart/internal/order"
 	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery"
+	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
+	usecase2 "github.com/22Fariz22/gophermart/internal/order/usecase"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
@@ -30,13 +32,15 @@ type App struct {
 func NewApp(cfg *config.Config) *App {
 
 	// Repository
-	db, err := postgres.New(cfg.DATABASE_URI)
+	//db, err := postgres.New(cfg.DATABASE_URI)
+	db, err := postgres.New(cfg.DATABASE_URI, postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
 	defer db.Close()
 
 	userRepo := postgres2.NewUserRepository(db)
+	orderRepo := postgres3.NewOrderRepository(db)
 
 	return &App{
 		authUC: usecase.NewAuthUseCase(
@@ -45,8 +49,10 @@ func NewApp(cfg *config.Config) *App {
 			[]byte("signing_key"),
 			time.Duration(86400),
 		),
+		orderUC: usecase2.NewOrderUseCase(orderRepo),
 	}
 }
+
 func (a *App) Run() error {
 	l := logger.New("debug")
 
@@ -59,7 +65,7 @@ func (a *App) Run() error {
 
 	// Set up http handlers
 	// SignUp/SignIn endpoints
-	delivery.RegisterHTTPEndpoints(router, a.authUC)
+	delivery.RegisterHTTPEndpoints(router, a.authUC, l)
 
 	// API endpoints
 	authMiddleware := delivery.NewAuthMiddleware(a.authUC)

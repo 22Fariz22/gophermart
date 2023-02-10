@@ -16,7 +16,7 @@ func NewUserRepository(db *postgres.Postgres) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (r UserRepository) CreateUser(ctx context.Context, user *entity.User) error {
+func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) error {
 	_, err := r.Pool.Exec(context.Background(),
 		"CREATE TABLE if not exists user(ID SERIAL PRIMARY KEY,login TEXT,password TEXT,"+
 			"balance_total integer, withdraw_total integer;")
@@ -26,11 +26,11 @@ func (r UserRepository) CreateUser(ctx context.Context, user *entity.User) error
 	}
 
 	fmt.Println("user from db create user:", user)
-	
+
 	return nil
 }
 
-func (r UserRepository) GetUser(ctx context.Context, username, password string) (*entity.User, error) {
+func (r *UserRepository) GetUser(ctx context.Context, username, password string) (*entity.User, error) {
 
 	return nil, nil
 }
