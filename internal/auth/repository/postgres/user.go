@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"github.com/rs/zerolog/log"
 )
 
 type UserRepository struct {
@@ -16,9 +16,11 @@ func NewUserRepository(db *postgres.Postgres) *UserRepository {
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) error {
-
-	fmt.Println("user from db create user:", user)
-
+	_, err := r.Pool.Exec(ctx, "INSERT INTO users(login, password) values($1, $2);", user.Login, user.Password)
+	if err != nil {
+		log.Print("err (1) in db CreateUser: ", err)
+		return err
+	}
 	return nil
 }
 

@@ -80,16 +80,16 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 	_, err := pool.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS users(
 		user_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-		login VARCHAR(255) NOT NULL,
+		login VARCHAR(255) UNIQUE NOT NULL,
 		password VARCHAR(255) NOT NULL,
-		balance_total INT,
-		withdraw_total INT 
+		balance_total INT DEFAULT 0,
+		withdraw_total INT DEFAULT 0
 );
 
 		CREATE TABLE IF NOT EXISTS orders(
 		order_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 		user_id INT,
-		number INT,
+		number INT NOT NULL,
 		order_status VARCHAR(15),
 		uploaded_at timestamp NOT NULL DEFAULT NOW(),
 		CONSTRAINT fk_user
@@ -100,7 +100,7 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 		balance_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 		order_id INT,
 		user_id INT,
-		accrual INT,
+		accrual INT DEFAULT 0,
 		balance_status VARCHAR(15),
 		--uploaded_at,
 		--withdraw_at ,

@@ -42,7 +42,7 @@ func NewApp(cfg *config.Config) *App {
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
-	defer db.Close()
+	//defer db.Close()
 
 	userRepo := postgres2.NewUserRepository(db)
 	orderRepo := postgres3.NewOrderRepository(db)
