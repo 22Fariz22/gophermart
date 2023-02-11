@@ -64,6 +64,8 @@ func New(url string, opts ...Option) (*Postgres, error) {
 		return nil, fmt.Errorf("postgres - NewPostgres - connAttempts == 0: %w", err)
 	}
 
+	createTables(pg.Pool)
+
 	return pg, nil
 }
 
@@ -72,4 +74,43 @@ func (p *Postgres) Close() {
 	if p.Pool != nil {
 		p.Pool.Close()
 	}
+}
+
+func createTables(pool *pgxpool.Pool) (*Postgres, error) {
+	_, err := pool.Exec(context.Background(), `
+		CREATE TABLE IF NOT EXISTS users(
+		user_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+		login VARCHAR(255) NOT NULL,
+		password VARCHAR(255) NOT NULL,
+		balance_total INT,
+		withdraw_total INT 
+);
+
+		CREATE TABLE IF NOT EXISTS orders(
+		order_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+		user_id INT,
+		number INT,
+		order_status VARCHAR(15),
+		uploaded_at timestamp NOT NULL DEFAULT NOW(),
+		CONSTRAINT fk_user
+			FOREIGN KEY(user_id)
+			REFERENCES users(user_id) 
+);
+		CREATE TABLE IF NOT EXISTS balance(
+		balance_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+		order_id INT,
+		user_id INT,
+		accrual INT,
+		balance_status VARCHAR(15),
+		--uploaded_at,
+		--withdraw_at ,
+		CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(user_id),
+		CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(order_id)	
+);
+`)
+	if err != nil {
+		log.Printf("Unable to create table: %v\n", err)
+		return nil, err
+	}
+	return nil, err
 }
