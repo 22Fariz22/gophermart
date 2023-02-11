@@ -8,6 +8,10 @@ import (
 	"github.com/22Fariz22/gophermart/internal/auth/delivery"
 	postgres2 "github.com/22Fariz22/gophermart/internal/auth/repository/postgres"
 	"github.com/22Fariz22/gophermart/internal/auth/usecase"
+	"github.com/22Fariz22/gophermart/internal/balance"
+	delivery3 "github.com/22Fariz22/gophermart/internal/balance/delivery"
+	postgres4 "github.com/22Fariz22/gophermart/internal/balance/repository/postgres"
+	usecase3 "github.com/22Fariz22/gophermart/internal/balance/usecase"
 	"github.com/22Fariz22/gophermart/internal/order"
 	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery"
 	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
@@ -26,8 +30,9 @@ import (
 type App struct {
 	httpServer *http.Server
 
-	authUC  auth.UseCase
-	orderUC order.UseCase
+	authUC    auth.UseCase
+	orderUC   order.UseCase
+	balanceUC balance.UseCase
 }
 
 func NewApp(cfg *config.Config) *App {
@@ -41,6 +46,7 @@ func NewApp(cfg *config.Config) *App {
 
 	userRepo := postgres2.NewUserRepository(db)
 	orderRepo := postgres3.NewOrderRepository(db)
+	balanceRepo := postgres4.NewBalanceRepository(db)
 
 	return &App{
 		authUC: usecase.NewAuthUseCase(
@@ -49,7 +55,8 @@ func NewApp(cfg *config.Config) *App {
 			[]byte("signing_key"),
 			time.Duration(86400),
 		),
-		orderUC: usecase2.NewOrderUseCase(orderRepo),
+		orderUC:   usecase2.NewOrderUseCase(orderRepo),
+		balanceUC: usecase3.NewBalanceUseCase(balanceRepo),
 	}
 }
 
@@ -71,7 +78,8 @@ func (a *App) Run() error {
 	authMiddleware := delivery.NewAuthMiddleware(a.authUC)
 	api := router.Group("/", authMiddleware)
 
-	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC)
+	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC, l)
+	delivery3.RegisterHTTPEndpoints(api, a.balanceUC, l)
 
 	// HTTP Server
 	a.httpServer = &http.Server{
