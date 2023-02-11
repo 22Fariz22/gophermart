@@ -17,16 +17,16 @@ func NewBalanceUseCase(balanceRepo balance.BalanceRepository) *BalanceUseCase {
 }
 
 func (b *BalanceUseCase) GetBalance(ctx context.Context, user *entity.User) (uint32, error) {
-
-	return 0, nil
+	//TODO implement me
+	panic("implement me")
 }
 
 func (b *BalanceUseCase) Withdraw(ctx context.Context, number uint32, withdraw uint32) error {
-
-	return nil
+	//TODO implement me
+	panic("implement me")
 }
 
 func (b *BalanceUseCase) InfoWithdrawal(ctx context.Context) ([]entity.Balance, error) {
-
-	return nil, nil
+	//TODO implement me
+	panic("implement me")
 }

@@ -10,17 +10,17 @@ type BalanceRepository struct {
 	*postgres.Postgres
 }
 
-func (b BalanceRepository) GetBalance(ctx context.Context, user *entity.User) (uint32, error) {
+func (b *BalanceRepository) GetBalance(ctx context.Context, user *entity.User) (uint32, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b BalanceRepository) Withdraw(ctx context.Context, number uint32, withdraw uint32) error {
+func (b *BalanceRepository) Withdraw(ctx context.Context, number uint32, withdraw uint32) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b BalanceRepository) InfoWithdrawal(ctx context.Context) ([]entity.Balance, error) {
+func (b *BalanceRepository) InfoWithdrawal(ctx context.Context) ([]entity.Balance, error) {
 	//TODO implement me
 	panic("implement me")
 }
