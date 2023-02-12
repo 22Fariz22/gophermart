@@ -3,8 +3,8 @@ package entity
 import "time"
 
 type Order struct {
-	ID     uint32
-	UserID uint32
+	ID     string
+	UserID string
 	Number uint32
 	//Accrual    uint32
 	Status     string

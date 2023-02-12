@@ -6,6 +6,6 @@ import (
 )
 
 type UseCase interface {
-	PushOrder(ctx context.Context, number uint32) error
-	GetOrders(ctx context.Context) ([]entity.Order, error)
+	PushOrder(ctx context.Context, user *entity.User, number uint32) error
+	GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error)
 }

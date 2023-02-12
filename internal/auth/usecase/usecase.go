@@ -57,6 +57,7 @@ func (a *AuthUseCase) SignIn(ctx context.Context, username, password string) (st
 	password = fmt.Sprintf("%x", pwd.Sum(nil))
 
 	user, err := a.userRepo.GetUser(ctx, username, password)
+	fmt.Println("auth-uc-user: ", err)
 	if err != nil {
 		return "", auth.ErrUserNotFound
 	}

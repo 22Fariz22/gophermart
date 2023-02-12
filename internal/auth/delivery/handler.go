@@ -55,11 +55,14 @@ func (h *Handler) SignIn(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 	token, err := h.useCase.SignIn(c.Request.Context(), inp.Login, inp.Password)
+	fmt.Println("auth-handler-token:", token)
+	fmt.Println("auth-handker-err(1): ", err)
 	if err != nil {
 		if err == auth.ErrUserNotFound {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 	}
-	c.JSON(http.StatusOK, signInResponse{Token: token})
+	//c.JSON(http.StatusOK, signInResponse{Token: token}) //что делать дальше с токеном??
+	c.Status(http.StatusOK)
 }

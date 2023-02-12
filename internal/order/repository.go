@@ -8,6 +8,6 @@ import (
 //interface
 
 type OrderRepository interface {
-	PushOrder(ctx context.Context, number uint32) error                   //POST /api/user/orders
-	GetOrders(ctx context.Context, number uint32) ([]entity.Order, error) //GET /api/user/orders
+	PushOrder(ctx context.Context, user *entity.User, eo *entity.Order) error
+	GetOrders(ctx context.Context) ([]entity.Order, error)
 }

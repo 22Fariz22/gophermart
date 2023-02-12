@@ -3,9 +3,9 @@ package entity
 import "time"
 
 type Balance struct {
-	ID           uint32
-	OrderID      uint32
-	UserID       uint32
+	ID           string
+	OrderID      string
+	UserID       string
 	Accrual      uint32
 	Status       uint8
 	UploadedAt   time.Time

@@ -89,7 +89,7 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 		CREATE TABLE IF NOT EXISTS orders(
 		order_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 		user_id INT,
-		number INT NOT NULL,
+		number INT UNIQUE NOT NULL,
 		order_status VARCHAR(15),
 		uploaded_at timestamp NOT NULL DEFAULT NOW(),
 		CONSTRAINT fk_user
