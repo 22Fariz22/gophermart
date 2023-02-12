@@ -9,7 +9,7 @@ import (
 func RegisterHTTPEndpointsOrder(router *gin.RouterGroup, uc order.UseCase, l logger.Interface) {
 	h := NewHandler(uc, l)
 
-	orders := router.Group("/")
+	orders := router.Group("/api/user")
 	{
 		orders.POST("orders", h.PushOrder)
 		orders.GET("orders", h.GetOrders)

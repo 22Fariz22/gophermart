@@ -63,6 +63,6 @@ func (h *Handler) SignIn(c *gin.Context) {
 			return
 		}
 	}
-	//c.JSON(http.StatusOK, signInResponse{Token: token}) //что делать дальше с токеном??
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, signInResponse{Token: token}) //что делать дальше с токеном??
+	//c.Status(http.StatusOK)
 }

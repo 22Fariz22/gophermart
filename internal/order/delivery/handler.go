@@ -1,11 +1,13 @@
 package delivery
 
 import (
+	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -30,19 +32,19 @@ func NewHandler(useCase order.UseCase, l logger.Interface) *Handler {
 }
 
 type Number struct {
-	number uint32
+	number string
 }
 
 func (h *Handler) PushOrder(c *gin.Context) {
-	inp := new(Number)
-
-	if err := c.Bind(inp); err != nil {
+	payload, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
+	fmt.Println("order-handler-PushOrder()-payload: ", string(payload))
 	// еще добавить проверку Луна и к нему статус 422
-	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
-	if err := h.useCase.PushOrder(c.Request.Context(), user, inp.number); err != nil {
+	user := c.MustGet(auth.CtxUserKey).(*entity.User)
+	if err := h.useCase.PushOrder(c.Request.Context(), user, string(payload)); err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
