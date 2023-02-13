@@ -39,6 +39,7 @@ type Number struct {
 func (h *Handler) PushOrder(c *gin.Context) {
 	payload, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
+		h.l.Error("Status Bad Request: ", err)
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 	fmt.Println("order-handler-PushOrder()-payload: ", string(payload))
@@ -47,6 +48,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
 	if err := h.useCase.PushOrder(c.Request.Context(), user, string(payload)); err != nil {
+		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -65,6 +67,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 	orders, err := h.useCase.GetOrders(c.Request.Context(), user)
 	fmt.Println("order-handler-GetOrder()-orders: ", orders)
 	if err != nil {
+		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
