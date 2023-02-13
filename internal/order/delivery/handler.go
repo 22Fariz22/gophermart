@@ -54,7 +54,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 }
 
 type ordersResponse struct {
-	orders []*Order `json:"orders"`
+	Orders []*Order `json:"orders"`
 }
 
 func (h *Handler) GetOrders(c *gin.Context) {
@@ -70,7 +70,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &ordersResponse{
-		orders: toOrders(orders),
+		Orders: toOrders(orders),
 	})
 }
 
