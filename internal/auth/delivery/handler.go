@@ -68,5 +68,5 @@ func (h *Handler) SignIn(c *gin.Context) {
 	//c.JSON(http.StatusOK, signInResponse{Token: token})
 	c.Header("Authorization", token)
 
-	c.Status(http.StatusOK)
+	//c.Status(http.StatusOK)
 }
