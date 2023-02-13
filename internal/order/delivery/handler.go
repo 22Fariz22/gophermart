@@ -13,10 +13,11 @@ import (
 )
 
 type Order struct {
-	ID         uint32
-	Number     uint32
-	Status     string
-	UploadedAt time.Time
+	ID         string    `json:"id"`
+	Number     string    `json:"number"`
+	Status     string    `json:"status"`
+	Accrual    uint32    `json:"accrual"`
+	UploadedAt time.Time `json:"uploaded_at"`
 }
 
 type Handler struct {
@@ -44,6 +45,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	// еще добавить проверку Луна и к нему статус 422
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
+
 	if err := h.useCase.PushOrder(c.Request.Context(), user, string(payload)); err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -51,6 +53,41 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *Handler) GetOrders(c *gin.Context) {
+type ordersResponse struct {
+	orders []*Order `json:"orders"`
+}
 
+func (h *Handler) GetOrders(c *gin.Context) {
+	fmt.Println("order-handler-GetOrder()")
+
+	user := c.MustGet(auth.CtxUserKey).(*entity.User)
+
+	orders, err := h.useCase.GetOrders(c.Request.Context(), user)
+	fmt.Println("order-handler-GetOrder()-orders: ", orders)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, &ordersResponse{
+		orders: toOrders(orders),
+	})
+}
+
+func toOrders(os []*entity.Order) []*Order {
+	out := make([]*Order, len(os))
+
+	for i, o := range os {
+		out[i] = toOrder(o)
+	}
+	return out
+}
+
+func toOrder(o *entity.Order) *Order {
+	return &Order{
+		ID:         o.ID,
+		Number:     o.Number,
+		Status:     o.Status,
+		UploadedAt: time.Time{},
+	}
 }

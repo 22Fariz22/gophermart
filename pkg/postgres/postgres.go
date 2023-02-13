@@ -91,6 +91,7 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 		user_id INT,
 		number VARCHAR(120) UNIQUE NOT NULL,
 		order_status VARCHAR(15),
+		accrual INT DEFAULT 0,
 		uploaded_at timestamp NOT NULL DEFAULT NOW(),
 		CONSTRAINT fk_user
 			FOREIGN KEY(user_id)
@@ -100,7 +101,7 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 		balance_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 		order_id INT,
 		user_id INT,
-		accrual INT DEFAULT 0,
+		--accrual INT DEFAULT 0,
 		balance_status VARCHAR(15),
 		--uploaded_at,
 		--withdraw_at ,

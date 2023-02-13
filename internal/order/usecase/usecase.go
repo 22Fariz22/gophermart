@@ -18,7 +18,7 @@ func NewOrderUseCase(orderRepo order.OrderRepository) *OrderUseCase {
 
 func (o *OrderUseCase) PushOrder(ctx context.Context, user *entity.User, number string) error {
 	fmt.Println("order-uc-PushOrder().")
-	eo := &entity.Order{
+	eo := &entity.Order{ // можно ли убрать это или перенести это действие в репо?
 		ID:         "",
 		UserID:     "",
 		Number:     number,
@@ -29,6 +29,9 @@ func (o *OrderUseCase) PushOrder(ctx context.Context, user *entity.User, number 
 }
 
 func (o *OrderUseCase) GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error) {
-
-	return []*entity.Order{}, nil
+	orders, err := o.orderRepo.GetOrders(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
 }

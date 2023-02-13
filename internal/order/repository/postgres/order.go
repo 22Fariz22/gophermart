@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"log"
 	"time"
 )
 
 type OrderRepository struct {
 	*postgres.Postgres
 }
+
 type Order struct {
 	ID         string
 	UserID     string
 	Number     string
 	Status     string
+	Accrual    uint32
 	UploadedAt time.Time
 }
 
@@ -38,9 +41,29 @@ func (o *OrderRepository) PushOrder(ctx context.Context, user *entity.User, eo *
 	return nil
 }
 
-func (o OrderRepository) GetOrders(ctx context.Context) ([]entity.Order, error) {
-	//TODO implement me
-	panic("implement me")
+func (o OrderRepository) GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error) {
+	fmt.Println("order-repo-GetOrders().")
+	rows, err := o.Pool.Query(ctx, `SELECT number, order_status, accrual, uploaded_at FROM orders
+									WHERE user_id = $1`, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*entity.Order, 0)
+
+	for rows.Next() {
+		order := new(entity.Order)
+		err := rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
+		if err != nil {
+			log.Println("order-repo-GetOrders()-rows.Scan()-err: ", err)
+			return nil, err
+		}
+		fmt.Println("order-repo-GetOrders()-order: ", order)
+		out = append(out, order)
+	}
+
+	fmt.Println("order-repo-GetOrders()-out: ", out)
+	return out, nil
 }
 
 func toModel(o *entity.Order) *Order {

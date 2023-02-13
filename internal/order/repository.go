@@ -9,5 +9,5 @@ import (
 
 type OrderRepository interface {
 	PushOrder(ctx context.Context, user *entity.User, eo *entity.Order) error
-	GetOrders(ctx context.Context) ([]entity.Order, error)
+	GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error)
 }
