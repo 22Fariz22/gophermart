@@ -23,8 +23,8 @@ func NewHandler(useCase balance.UseCase, l logger.Interface) *Handler {
 }
 
 type BalanceResponce struct {
-	current   uint32 `json:"current"`
-	withdrawn uint32 `json:"withdrawn"`
+	Current   int `json:"current"`
+	Withdrawn int `json:"withdrawn"`
 }
 
 func (h *Handler) GetBalance(c *gin.Context) {
@@ -32,14 +32,28 @@ func (h *Handler) GetBalance(c *gin.Context) {
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 	fmt.Println("balance-handler-GetBalance()-user: ", user)
 
-	balance, err := h.useCase.GetBalance(c.Request.Context(), h.l, user)
+	u, err := h.useCase.GetBalance(c.Request.Context(), h.l, user)
 	if err != nil {
 		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("balance-handler-GetBalance()-balance: ", balance)
 
+	fmt.Println("balance-handler-GetBalance()-balance: ", u)
+	br := toBalanceResponce(u)
+
+	fmt.Println("balance-handler-GetBalance()-br:", br)
+
+	c.JSON(http.StatusOK, BalanceResponce{
+		Current:   br.Current,
+		Withdrawn: br.Withdrawn,
+	})
+}
+func toBalanceResponce(u *entity.User) *BalanceResponce {
+	return &BalanceResponce{
+		Current:   u.BalanceTotal / 100,
+		Withdrawn: u.WithdrawTotal,
+	}
 }
 
 func (h *Handler) InfoWithdrawal(c *gin.Context) {

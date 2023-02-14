@@ -18,12 +18,12 @@ func NewBalanceUseCase(balanceRepo balance.BalanceRepository) *BalanceUseCase {
 }
 
 func (b *BalanceUseCase) GetBalance(ctx context.Context, l logger.Interface, user *entity.User) (*entity.User, error) {
-	balance, err := b.BalanceRepo.GetBalance(ctx, l, user)
+	u, err := b.BalanceRepo.GetBalance(ctx, l, user)
 	if err != nil {
 		l.Error("balance-uc-GetBalance()-err: ", err)
 		return nil, err
 	}
-	return balance, nil
+	return u, nil
 }
 
 func (b *BalanceUseCase) Withdraw(ctx context.Context, number uint32, withdraw uint32) error {

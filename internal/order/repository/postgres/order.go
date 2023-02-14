@@ -43,7 +43,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, user *entity.User, eo *
 
 func (o OrderRepository) GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error) {
 	fmt.Println("order-repo-GetOrders().")
-	rows, err := o.Pool.Query(ctx, `SELECT number, order_status, accrual, uploaded_at FROM orders
+	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (o OrderRepository) GetOrders(ctx context.Context, user *entity.User) ([]*e
 
 	for rows.Next() {
 		order := new(entity.Order)
-		err := rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
+		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
 			log.Println("order-repo-GetOrders()-rows.Scan()-err: ", err)
 			return nil, err
