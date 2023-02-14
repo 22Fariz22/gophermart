@@ -32,7 +32,7 @@ type App struct {
 
 	authUC    auth.UseCase
 	orderUC   order.UseCase
-	balanceUC history.UseCase
+	historyUC history.UseCase
 }
 
 func NewApp(cfg *config.Config) *App {
@@ -46,7 +46,7 @@ func NewApp(cfg *config.Config) *App {
 
 	userRepo := postgres2.NewUserRepository(db)
 	orderRepo := postgres3.NewOrderRepository(db)
-	balanceRepo := postgres4.NewBalanceRepository(db)
+	historyRepo := postgres4.NewHistoryRepository(db)
 
 	return &App{
 		authUC: usecase.NewAuthUseCase(
@@ -56,7 +56,7 @@ func NewApp(cfg *config.Config) *App {
 			time.Duration(86400),
 		),
 		orderUC:   usecase2.NewOrderUseCase(orderRepo),
-		balanceUC: usecase3.NewBalanceUseCase(balanceRepo),
+		historyUC: usecase3.NewHistoryUseCase(historyRepo),
 	}
 }
 
@@ -79,7 +79,7 @@ func (a *App) Run() error {
 	api := router.Group("/", authMiddleware)
 
 	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC, l)
-	delivery3.RegisterHTTPEndpoints(api, a.balanceUC, l)
+	delivery3.RegisterHTTPEndpoints(api, a.historyUC, l)
 
 	// HTTP Server
 	a.httpServer = &http.Server{

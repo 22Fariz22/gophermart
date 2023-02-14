@@ -52,7 +52,7 @@ func (h *Handler) GetBalance(c *gin.Context) {
 
 func toBalanceResponce(u *entity.User) *BalanceResponce {
 	return &BalanceResponce{
-		Current:   u.BalanceTotal / 100,
+		Current:   u.BalanceTotal,
 		Withdrawn: u.WithdrawTotal,
 	}
 }
@@ -100,14 +100,15 @@ type HistoryResponse struct {
 func (h *Handler) InfoWithdrawal(c *gin.Context) {
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
-	history, err := h.useCase.InfoWithdrawal(c.Request.Context(), h.l, user)
+	hist, err := h.useCase.InfoWithdrawal(c.Request.Context(), h.l, user)
 	if err != nil {
-		if err == history.ErrThereIsNoWithdrawal {
+		if err == history.ErrThereIsNoWithdrawal { //нет списаний
 			h.l.Error("There Is No Withdrawal")
 			c.AbortWithStatus(http.StatusNoContent)
 		}
 		h.l.Error("")
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
-	c.JSON(http.StatusOK, history)
+	fmt.Println("")
+	c.JSON(http.StatusOK, hist)
 }

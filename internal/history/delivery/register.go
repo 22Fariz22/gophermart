@@ -12,10 +12,10 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc history.UseCase, l logger
 
 	h := NewHandler(uc, l)
 
-	balanceEndpoints := router.Group("/api/user")
+	historyEndpoints := router.Group("/api/user")
 	{
-		balanceEndpoints.GET("/history", h.GetBalance)
-		balanceEndpoints.POST("/history/withdraw", h.Withdraw)
-		balanceEndpoints.GET("/history/withdrawals", h.InfoWithdrawal)
+		historyEndpoints.GET("/balance", h.GetBalance)
+		historyEndpoints.POST("/balance/withdraw", h.Withdraw)
+		historyEndpoints.GET("/withdrawals", h.InfoWithdrawal)
 	}
 }

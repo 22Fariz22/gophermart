@@ -27,10 +27,6 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 }
 
 func (o *OrderRepository) PushOrder(ctx context.Context, user *entity.User, eo *entity.Order) error {
-	//eo.UserID = user.ID
-	fmt.Println("number: ", eo.Number)
-	fmt.Println("eo: ", eo)
-	fmt.Println("user: ", user)
 	_, err := o.Pool.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
 								VALUES ($1,$2,$3,$4)`,
 		user.ID, eo.Number, eo.Status, eo.UploadedAt)
