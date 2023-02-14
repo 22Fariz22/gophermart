@@ -97,13 +97,13 @@ func createTables(pool *pgxpool.Pool) (*Postgres, error) {
 			FOREIGN KEY(user_id)
 			REFERENCES users(user_id) 
 );
-		CREATE TABLE IF NOT EXISTS balance(
-		balance_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+		CREATE TABLE IF NOT EXISTS history(
+		history_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 		order_id INT,
 		user_id INT,
-		--accrual INT DEFAULT 0,
-		balance_status VARCHAR(15),
-		--uploaded_at,
+		accrual INT DEFAULT 0,
+		--balance_status VARCHAR(15),
+		processed_at timestamp NOT NULL DEFAULT NOW() ,
 		--withdraw_at ,
 		CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(user_id),
 		CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(order_id)	

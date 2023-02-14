@@ -3,19 +3,19 @@ package delivery
 import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
-	"github.com/22Fariz22/gophermart/internal/balance"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/internal/history"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type Handler struct {
-	useCase balance.UseCase
+	useCase history.UseCase
 	l       logger.Interface
 }
 
-func NewHandler(useCase balance.UseCase, l logger.Interface) *Handler {
+func NewHandler(useCase history.UseCase, l logger.Interface) *Handler {
 	return &Handler{
 		useCase: useCase,
 		l:       l,
@@ -28,9 +28,9 @@ type BalanceResponce struct {
 }
 
 func (h *Handler) GetBalance(c *gin.Context) {
-	fmt.Println("balance-handler-GetBalance().")
+	fmt.Println("history-handler-GetBalance().")
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-	fmt.Println("balance-handler-GetBalance()-user: ", user)
+	fmt.Println("history-handler-GetBalance()-user: ", user)
 
 	u, err := h.useCase.GetBalance(c.Request.Context(), h.l, user)
 	if err != nil {
@@ -39,10 +39,10 @@ func (h *Handler) GetBalance(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("balance-handler-GetBalance()-balance: ", u)
+	fmt.Println("history-handler-GetBalance()-history: ", u)
 	br := toBalanceResponce(u)
 
-	fmt.Println("balance-handler-GetBalance()-br:", br)
+	fmt.Println("history-handler-GetBalance()-br:", br)
 
 	c.JSON(http.StatusOK, BalanceResponce{
 		Current:   br.Current,
@@ -63,26 +63,27 @@ type InputWithdraw struct {
 }
 
 func (h *Handler) Withdraw(c *gin.Context) {
-	fmt.Println("balance-handler-Withdraw().")
+	fmt.Println("history-handler-Withdraw().")
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-	fmt.Println("balance-handler-Withdraw()-user: ", user)
+	fmt.Println("history-handler-Withdraw()-user: ", user)
 
 	inp := new(InputWithdraw)
 	if err := c.BindJSON(inp); err != nil {
-		h.l.Error("balance-handler-Withdraw()-BindJSON-err: ", err)
+		h.l.Error("history-handler-Withdraw()-BindJSON-err: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println("balance-handler-Withdraw()-InputWithdraw: ", inp)
+	fmt.Println("history-handler-Withdraw()-InputWithdraw: ", inp)
 
 	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, inp.Sum)
 	if err != nil {
-		if err == balance.ErrNotEnoughFunds { //если не достаточно баллов
-			h.l.Error("Err Not Enough Funds")
+		if err == history.ErrNotEnoughFunds { //если не достаточно баллов
+			h.l.Error("Not Enough Funds")
 			c.AbortWithStatus(http.StatusPaymentRequired)
 		}
+
 		h.l.Error("Status Internal Server Error: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -92,6 +93,21 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *Handler) InfoWithdrawal(c *gin.Context) {
+type HistoryResponse struct {
+	HistoryResp []*entity.History `json:"history_resp"`
+}
 
+func (h *Handler) InfoWithdrawal(c *gin.Context) {
+	user := c.MustGet(auth.CtxUserKey).(*entity.User)
+
+	history, err := h.useCase.InfoWithdrawal(c.Request.Context(), h.l, user)
+	if err != nil {
+		if err == history.ErrThereIsNoWithdrawal {
+			h.l.Error("There Is No Withdrawal")
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+		h.l.Error("")
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+	c.JSON(http.StatusOK, history)
 }

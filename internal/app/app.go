@@ -8,10 +8,10 @@ import (
 	"github.com/22Fariz22/gophermart/internal/auth/delivery"
 	postgres2 "github.com/22Fariz22/gophermart/internal/auth/repository/postgres"
 	"github.com/22Fariz22/gophermart/internal/auth/usecase"
-	"github.com/22Fariz22/gophermart/internal/balance"
-	delivery3 "github.com/22Fariz22/gophermart/internal/balance/delivery"
-	postgres4 "github.com/22Fariz22/gophermart/internal/balance/repository/postgres"
-	usecase3 "github.com/22Fariz22/gophermart/internal/balance/usecase"
+	"github.com/22Fariz22/gophermart/internal/history"
+	delivery3 "github.com/22Fariz22/gophermart/internal/history/delivery"
+	postgres4 "github.com/22Fariz22/gophermart/internal/history/repository/postgres"
+	usecase3 "github.com/22Fariz22/gophermart/internal/history/usecase"
 	"github.com/22Fariz22/gophermart/internal/order"
 	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery"
 	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
@@ -32,7 +32,7 @@ type App struct {
 
 	authUC    auth.UseCase
 	orderUC   order.UseCase
-	balanceUC balance.UseCase
+	balanceUC history.UseCase
 }
 
 func NewApp(cfg *config.Config) *App {

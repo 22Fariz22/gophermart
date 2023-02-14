@@ -1,4 +1,4 @@
-package balance
+package history
 
 import (
 	"context"
@@ -9,5 +9,5 @@ import (
 type UseCase interface {
 	GetBalance(ctx context.Context, l logger.Interface, user *entity.User) (*entity.User, error)
 	Withdraw(ctx context.Context, l logger.Interface, user *entity.User, number string, withdraw int) error
-	InfoWithdrawal(ctx context.Context) ([]entity.Balance, error)
+	InfoWithdrawal(ctx context.Context, l logger.Interface, user *entity.User) ([]entity.History, error)
 }

@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/22Fariz22/gophermart/internal/balance"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/internal/history"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -19,7 +19,7 @@ type UserBalance struct {
 }
 
 func (b *BalanceRepository) GetBalance(ctx context.Context, l logger.Interface, user *entity.User) (*entity.User, error) {
-	fmt.Println("balance-repo-GetBalance()-user: ", user)
+	fmt.Println("history-repo-GetBalance()-user: ", user)
 	var ub UserBalance
 
 	var u entity.User
@@ -28,10 +28,10 @@ func (b *BalanceRepository) GetBalance(ctx context.Context, l logger.Interface, 
 										FROM users
 										where user_id = $1;`, user.ID)
 	if err != nil {
-		l.Error("balance-repo-GetBalance()-err: ", err)
+		l.Error("history-repo-GetBalance()-err: ", err)
 		return nil, err
 	}
-	fmt.Println("balance-repo-GetBalance()-ub: ", ub)
+	fmt.Println("history-repo-GetBalance()-ub: ", ub)
 
 	u.BalanceTotal = ub.Balance_total
 	u.WithdrawTotal = ub.Withdraw_total
@@ -43,25 +43,32 @@ func (b *BalanceRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	number string, withdrawResp int) error {
 	withdraw_total := 0
 
-	// reflect.TypeOf(balance.ErrNotEnoughFunds) :  *errors.errorString
+	// reflect.TypeOf(history.ErrNotEnoughFunds) :  *errors.errorString
 
 	err := pgxscan.Get(ctx, b.Pool, &withdraw_total, `SELECT withdraw_total FROM users
 									  WHERE user_id = $1`, user.ID)
 	if err != nil {
-		l.Error("balance-repo-Withdraw()-err: ", err)
+		l.Error("history-repo-Withdraw()-err: ", err)
 		return err
 	}
 
-	fmt.Println("balance-repo-Withdraw()-withdraw_total: ", withdraw_total)
-	if withdraw_total < withdrawResp {
-		l.Error("balance-repo-Withdraw()- withdraw_total<withdrawResp): ", balance.ErrNotEnoughFunds)
-		return balance.ErrNotEnoughFunds
+	fmt.Println("history-repo-Withdraw()-withdraw_total: ", withdraw_total)
+	if withdraw_total < withdrawResp || withdrawResp < 0 { //сравниваем наш баланс с запросом
+		l.Error("history-repo-Withdraw()- withdraw_total<withdrawResp): ", history.ErrNotEnoughFunds)
+		return history.ErrNotEnoughFunds
 	}
 
+	_, err = b.Pool.Exec(ctx, `UPDATE users SET withdraw_total = withdraw_total - $1
+								WHERE user_id = $2`, withdrawResp, user.ID)
+	if err != nil {
+		l.Error("history-repo-Withdraw()-exec update: ", err)
+		return err
+	}
 	return nil
 }
 
-func (b *BalanceRepository) InfoWithdrawal(ctx context.Context) ([]entity.Balance, error) {
+func (b *BalanceRepository) InfoWithdrawal(ctx context.Context, l logger.Interface,
+	user *entity.User) ([]entity.History, error) {
 	//TODO implement me
 	panic("implement me")
 }
