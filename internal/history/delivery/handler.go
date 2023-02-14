@@ -8,6 +8,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -93,8 +94,13 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-type HistoryResponse struct {
-	HistoryResp []*entity.History `json:"history_resp"`
+//type HistoryResponse struct {
+//	HistoryResp []*entity.History `json:"history_resp"`
+//}
+type HistoryResp struct {
+	Number      string    `json:"number"`
+	Sum         int       `json:"sum"`
+	ProcessedAt time.Time `json:"processed_at"`
 }
 
 func (h *Handler) InfoWithdrawal(c *gin.Context) {
@@ -109,6 +115,6 @@ func (h *Handler) InfoWithdrawal(c *gin.Context) {
 		h.l.Error("")
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
-	fmt.Println("")
+
 	c.JSON(http.StatusOK, hist)
 }

@@ -67,11 +67,13 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	defer tx.Rollback(ctx)
 
 	//UPDATE в таблице USER полей balance_total и withdraw_total
-	_, err = tx.Prepare(ctx, "UPDATE", `UPDATE users SET withdraw_total = withdraw_total - $1 WHERE user_id = $2;`)
+	_, err = tx.Prepare(ctx, "UPDATE", `UPDATE users SET balance_total = balance_total - $1,
+								withdraw_total = withdraw_total + $1 WHERE user_id = $2;`)
 	if err != nil {
 		l.Error("error in tx.Prepare UPDATE: ", err)
 	}
-	_, err = tx.Exec(ctx, `UPDATE users SET withdraw_total = withdraw_total - $1 WHERE user_id = $2;`, withdrawResp, user.ID)
+	_, err = tx.Exec(ctx, `UPDATE users SET balance_total = balance_total - $1,
+						   withdraw_total = withdraw_total - $1 WHERE user_id = $2;`, withdrawResp, user.ID)
 	if err != nil {
 		l.Error("error in tx.Exec UPDATE: ", err)
 		return err
@@ -100,8 +102,25 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 
 func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interface,
 	user *entity.User) ([]*entity.History, error) {
+	rows, err := h.Pool.Query(ctx, `SELECT number, sum, processed_at FROM history WHERE user_id = $1`,
+		user.ID)
+	if err != nil {
+		l.Error("error in Query SELECT: ", err)
+		return nil, err
+	}
 
-	//rows, err := h.Pool.Query(ctx, `SELECT order.number, `)
+	out := make([]*entity.History, 0)
 
-	return nil, nil
+	for rows.Next() {
+		hist := new(entity.History)
+
+		err := rows.Scan(&hist.Number, &hist.Sum, &hist.ProcessedAt)
+		if err != nil {
+			l.Error("error in rows.Scan(): ", err)
+			return nil, err
+		}
+		out = append(out, hist)
+	}
+
+	return out, nil
 }
