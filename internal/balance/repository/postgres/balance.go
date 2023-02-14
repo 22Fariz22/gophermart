@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/22Fariz22/gophermart/internal/balance"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
@@ -39,8 +40,10 @@ func (b *BalanceRepository) GetBalance(ctx context.Context, l logger.Interface, 
 }
 
 func (b *BalanceRepository) Withdraw(ctx context.Context, l logger.Interface, user *entity.User,
-	number string, withdraw int) error {
+	number string, withdrawResp int) error {
 	withdraw_total := 0
+
+	// reflect.TypeOf(balance.ErrNotEnoughFunds) :  *errors.errorString
 
 	err := pgxscan.Get(ctx, b.Pool, &withdraw_total, `SELECT withdraw_total FROM users
 									  WHERE user_id = $1`, user.ID)
@@ -48,7 +51,12 @@ func (b *BalanceRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		l.Error("balance-repo-Withdraw()-err: ", err)
 		return err
 	}
+
 	fmt.Println("balance-repo-Withdraw()-withdraw_total: ", withdraw_total)
+	if withdraw_total < withdrawResp {
+		l.Error("balance-repo-Withdraw()- withdraw_total<withdrawResp): ", balance.ErrNotEnoughFunds)
+		return balance.ErrNotEnoughFunds
+	}
 
 	return nil
 }

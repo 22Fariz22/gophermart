@@ -79,12 +79,16 @@ func (h *Handler) Withdraw(c *gin.Context) {
 
 	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, inp.Sum)
 	if err != nil {
+		if err == balance.ErrNotEnoughFunds { //если не достаточно баллов
+			h.l.Error("Err Not Enough Funds")
+			c.AbortWithStatus(http.StatusPaymentRequired)
+		}
 		h.l.Error("Status Internal Server Error: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	// добавить проверку алгоритма Луна, при ошибке который верет 422
-	//как добавить ошибки? 402 — на счету недостаточно средств , 422 — неверный номер заказа;
+
 	c.Status(http.StatusOK)
 }
 
