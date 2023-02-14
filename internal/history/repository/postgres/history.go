@@ -49,7 +49,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	// узнаем сколько всего баллов
 	err := pgxscan.Get(ctx, h.Pool, &withdraw_total, `SELECT withdraw_total FROM users WHERE user_id = $1`, user.ID)
 	if err != nil {
-		l.Error("history-repo-Withdraw()-err: ", err)
+		l.Error("history-repo-Get()-err: ", err)
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		l.Error("error in tx.Prepare UPDATE: ", err)
 	}
 	_, err = tx.Exec(ctx, `UPDATE users SET balance_total = balance_total - $1,
-						   withdraw_total = withdraw_total - $1 WHERE user_id = $2;`, withdrawResp, user.ID)
+						   withdraw_total = withdraw_total + $1 WHERE user_id = $2;`, withdrawResp, user.ID)
 	if err != nil {
 		l.Error("error in tx.Exec UPDATE: ", err)
 		return err
@@ -82,12 +82,12 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	// INSERT в таблицу history
 	_, err = tx.Prepare(ctx, "INSERT", `INSERT INTO history(user_id, number, sum) VALUES($1, $2, $3);`)
 	if err != nil {
-		l.Error("error in tx.Prepare INSERT: ", err)
+		l.Error("tx.Prepare INSERT: ", err)
 		return err
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO history(user_id, number, sum) VALUES($1, $2, $3)`, user.ID, number, withdrawResp)
 	if err != nil {
-		l.Error("error in tx.Exec INSERT: ", err)
+		l.Error("tx.Exec INSERT: ", err)
 		return err
 	}
 
@@ -120,6 +120,10 @@ func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interfa
 			return nil, err
 		}
 		out = append(out, hist)
+	}
+
+	if len(out) == 0 {
+		return nil, history.ErrThereIsNoWithdrawal
 	}
 
 	return out, nil

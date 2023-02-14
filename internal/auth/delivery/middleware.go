@@ -1,10 +1,8 @@
 package delivery
 
 import (
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -20,11 +18,9 @@ func NewAuthMiddleware(usecase auth.UseCase) gin.HandlerFunc {
 }
 
 func (m *AuthMiddleware) Handle(c *gin.Context) {
-	fmt.Println("auth-middleware-Handle()")
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		fmt.Println("middleware-Handle()-authHeader ==' ' ")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -41,7 +37,6 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	}
 
 	user, err := m.usecase.ParseToken(c.Request.Context(), headerParts[1])
-	log.Println("auth-middleware-Handle()-user:", user)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
