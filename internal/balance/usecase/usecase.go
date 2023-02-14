@@ -26,9 +26,14 @@ func (b *BalanceUseCase) GetBalance(ctx context.Context, l logger.Interface, use
 	return u, nil
 }
 
-func (b *BalanceUseCase) Withdraw(ctx context.Context, number uint32, withdraw uint32) error {
-	//TODO implement me
-	panic("implement me")
+func (b *BalanceUseCase) Withdraw(ctx context.Context, l logger.Interface, user *entity.User, number string, withdraw int) error {
+	err := b.BalanceRepo.Withdraw(ctx, l, user, number, withdraw)
+	if err != nil {
+		l.Error("balance-uc-Withdraw()-err: ", err)
+		return err
+	}
+
+	return nil
 }
 
 func (b *BalanceUseCase) InfoWithdrawal(ctx context.Context) ([]entity.Balance, error) {

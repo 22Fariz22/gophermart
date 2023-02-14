@@ -49,6 +49,7 @@ func (h *Handler) GetBalance(c *gin.Context) {
 		Withdrawn: br.Withdrawn,
 	})
 }
+
 func toBalanceResponce(u *entity.User) *BalanceResponce {
 	return &BalanceResponce{
 		Current:   u.BalanceTotal / 100,
@@ -56,10 +57,37 @@ func toBalanceResponce(u *entity.User) *BalanceResponce {
 	}
 }
 
-func (h *Handler) InfoWithdrawal(c *gin.Context) {
-
+type InputWithdraw struct {
+	Order string `json:"order"`
+	Sum   int    `json:"sum"`
 }
 
 func (h *Handler) Withdraw(c *gin.Context) {
+	fmt.Println("balance-handler-Withdraw().")
+
+	user := c.MustGet(auth.CtxUserKey).(*entity.User)
+	fmt.Println("balance-handler-Withdraw()-user: ", user)
+
+	inp := new(InputWithdraw)
+	if err := c.BindJSON(inp); err != nil {
+		h.l.Error("balance-handler-Withdraw()-BindJSON-err: ", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("balance-handler-Withdraw()-InputWithdraw: ", inp)
+
+	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, inp.Sum)
+	if err != nil {
+		h.l.Error("Status Internal Server Error: ", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// добавить проверку алгоритма Луна, при ошибке который верет 422
+	//как добавить ошибки? 402 — на счету недостаточно средств , 422 — неверный номер заказа;
+	c.Status(http.StatusOK)
+}
+
+func (h *Handler) InfoWithdrawal(c *gin.Context) {
 
 }
