@@ -75,7 +75,7 @@ func (a *App) Run() error {
 	delivery.RegisterHTTPEndpoints(router, a.authUC, l)
 
 	// API endpoints
-	authMiddleware := delivery.NewAuthMiddleware(a.authUC)
+	authMiddleware := delivery.NewAuthMiddleware(a.authUC, l)
 	api := router.Group("/", authMiddleware)
 
 	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC, l)

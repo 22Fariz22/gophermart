@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"log"
 	"time"
@@ -26,7 +27,7 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 	return &OrderRepository{db}
 }
 
-func (o *OrderRepository) PushOrder(ctx context.Context, user *entity.User, eo *entity.Order) error {
+func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
 	_, err := o.Pool.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
 								VALUES ($1,$2,$3,$4)`,
 		user.ID, eo.Number, eo.Status, eo.UploadedAt)
@@ -37,7 +38,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, user *entity.User, eo *
 	return nil
 }
 
-func (o OrderRepository) GetOrders(ctx context.Context, user *entity.User) ([]*entity.Order, error) {
+func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user *entity.User) ([]*entity.Order, error) {
 	fmt.Println("order-repo-GetOrders().")
 	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)

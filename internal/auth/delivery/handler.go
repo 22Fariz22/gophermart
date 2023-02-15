@@ -36,7 +36,15 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	if err := h.useCase.SignUp(c.Request.Context(), inp.Login, inp.Password); err != nil {
+	if err := h.useCase.SignUp(c.Request.Context(), h.l, inp.Login, inp.Password); err != nil {
+		if err == auth.ErrLoginIsAlreadyTaken {
+			c.AbortWithStatus(http.StatusConflict)
+			return
+		}
+		if err == auth.ErrBadRequest {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +63,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	token, err := h.useCase.SignIn(c.Request.Context(), inp.Login, inp.Password)
+	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
 	fmt.Println("auth-handler-token:", token)
 	fmt.Println("auth-handker-err(1): ", err)
 	if err != nil {

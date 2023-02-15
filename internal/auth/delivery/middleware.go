@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"github.com/22Fariz22/gophermart/internal/auth"
+	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -9,11 +10,13 @@ import (
 
 type AuthMiddleware struct {
 	usecase auth.UseCase
+	l       logger.Interface
 }
 
-func NewAuthMiddleware(usecase auth.UseCase) gin.HandlerFunc {
+func NewAuthMiddleware(usecase auth.UseCase, l logger.Interface) gin.HandlerFunc {
 	return (&AuthMiddleware{
 		usecase: usecase,
+		l:       l,
 	}).Handle
 }
 
@@ -36,7 +39,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 		return
 	}
 
-	user, err := m.usecase.ParseToken(c.Request.Context(), headerParts[1])
+	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, headerParts[1])
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {

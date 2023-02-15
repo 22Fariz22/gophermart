@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
-	"github.com/rs/zerolog/log"
 )
 
 type User struct {
@@ -23,21 +23,42 @@ func NewUserRepository(db *postgres.Postgres) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) error {
-	_, err := r.Pool.Exec(ctx, "INSERT INTO users(login, password) values($1, $2);", user.Login, user.Password)
-	// не различает есть ли такой же или просто нету такого вообще, оба варианта это err.а нужны 409 и 500 статусы
+func (u *UserRepository) CreateUser(ctx context.Context, l logger.Interface, user *entity.User) error {
+	var login string
+
+	// проверяем чтобы не было пустого логина
+	if len(user.Login) == 0 {
+		l.Error("login length equal 0")
+		return auth.ErrBadRequest
+	}
+
+	// проверяем чтобы не было пустого пароля
+	if len(user.Password) == 0 {
+		l.Error("password length equal 0")
+		return auth.ErrBadRequest
+	}
+
+	// проверяем есть ли такой логин
+	_ = u.Pool.QueryRow(ctx, `SELECT login FROM users where login = $1;`, user.Login).Scan(&login)
+	if len(login) != 0 {
+		l.Error("Login is already taken.")
+		return auth.ErrLoginIsAlreadyTaken
+	}
+
+	// вставляем новый логин и пароль
+	_, err := u.Pool.Exec(ctx, "INSERT INTO users(login, password) values($1, $2);", user.Login, user.Password)
 	if err != nil {
-		log.Print("err (1) in db CreateUser: ", err)
+		l.Error("error in pool.Exec - INSERT.")
 		return err
 	}
-	//r.Close()
+
 	return nil
 }
 
-func (r *UserRepository) GetUser(ctx context.Context, login, password string) (*entity.User, error) {
-	row, err := r.Pool.Query(ctx, "select user_id,login,password from users where login = $1 and password = $2", login, password)
+func (u *UserRepository) GetUser(ctx context.Context, l logger.Interface, login, password string) (*entity.User, error) {
+	row, err := u.Pool.Query(ctx, "select user_id,login,password from users where login = $1 and password = $2", login, password)
 	if err != nil {
-		log.Print("db-getuser()-row.Scan()")
+		l.Error("error in pool.Query SELECT.")
 		return nil, err
 	}
 	defer row.Close()
@@ -49,6 +70,7 @@ func (r *UserRepository) GetUser(ctx context.Context, login, password string) (*
 		fmt.Println(row.Values())
 		err := row.Scan(&u.ID, &u.Login, &u.Password)
 		if err != nil {
+			l.Error("Error in row.Scan().")
 			return nil, auth.ErrUserNotFound
 		}
 

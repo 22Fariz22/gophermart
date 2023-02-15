@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/dgrijalva/jwt-go/v4"
 
 	"time"
@@ -36,7 +37,7 @@ func NewAuthUseCase(
 	}
 }
 
-func (a *AuthUseCase) SignUp(ctx context.Context, username, password string) error {
+func (a *AuthUseCase) SignUp(ctx context.Context, l logger.Interface, username, password string) error {
 	pwd := sha1.New()
 	fmt.Println("uc-signUp()-username-passwors", username, password)
 	pwd.Write([]byte(password))
@@ -47,16 +48,16 @@ func (a *AuthUseCase) SignUp(ctx context.Context, username, password string) err
 		Password: fmt.Sprintf("%x", pwd.Sum(nil)),
 	}
 
-	return a.userRepo.CreateUser(ctx, user)
+	return a.userRepo.CreateUser(ctx, l, user)
 }
 
-func (a *AuthUseCase) SignIn(ctx context.Context, username, password string) (string, error) {
+func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, password string) (string, error) {
 	pwd := sha1.New()
 	pwd.Write([]byte(password))
 	pwd.Write([]byte(a.hashSalt))
 	password = fmt.Sprintf("%x", pwd.Sum(nil))
 
-	user, err := a.userRepo.GetUser(ctx, username, password)
+	user, err := a.userRepo.GetUser(ctx, l, username, password)
 	fmt.Println("auth-uc-user: ", err)
 	if err != nil {
 		return "", auth.ErrUserNotFound
@@ -74,7 +75,7 @@ func (a *AuthUseCase) SignIn(ctx context.Context, username, password string) (st
 	return token.SignedString(a.signingKey)
 }
 
-func (a *AuthUseCase) ParseToken(ctx context.Context, accessToken string) (*entity.User, error) {
+func (a *AuthUseCase) ParseToken(ctx context.Context, l logger.Interface, accessToken string) (*entity.User, error) {
 	fmt.Println("auth-uc-ParseToken()")
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

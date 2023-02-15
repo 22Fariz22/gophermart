@@ -47,7 +47,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
-	if err := h.useCase.PushOrder(c.Request.Context(), user, string(payload)); err != nil {
+	if err := h.useCase.PushOrder(c.Request.Context(), h.l, user, string(payload)); err != nil {
 		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -64,7 +64,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
-	orders, err := h.useCase.GetOrders(c.Request.Context(), user)
+	orders, err := h.useCase.GetOrders(c.Request.Context(), h.l, user)
 	fmt.Println("order-handler-GetOrder()-orders: ", orders)
 	if err != nil {
 		h.l.Error("Status Internal ServerError: ", err)
