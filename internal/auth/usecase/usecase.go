@@ -76,15 +76,16 @@ func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, 
 }
 
 func (a *AuthUseCase) ParseToken(ctx context.Context, l logger.Interface, accessToken string) (*entity.User, error) {
-	fmt.Println("auth-uc-ParseToken()")
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			l.Info("Unexpected signing method")
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return a.signingKey, nil
 	})
 
 	if err != nil {
+		l.Info("err in jwt.ParseWithClaims()")
 		return nil, err
 	}
 

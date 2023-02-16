@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/history"
@@ -29,9 +28,7 @@ type BalanceResponce struct {
 }
 
 func (h *Handler) GetBalance(c *gin.Context) {
-	fmt.Println("history-handler-GetBalance().")
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-	fmt.Println("history-handler-GetBalance()-user: ", user)
 
 	u, err := h.useCase.GetBalance(c.Request.Context(), h.l, user)
 	if err != nil {
@@ -40,10 +37,7 @@ func (h *Handler) GetBalance(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("history-handler-GetBalance()-history: ", u)
 	br := toBalanceResponce(u)
-
-	fmt.Println("history-handler-GetBalance()-br:", br)
 
 	c.JSON(http.StatusOK, BalanceResponce{
 		Current:   br.Current,
@@ -64,10 +58,7 @@ type InputWithdraw struct {
 }
 
 func (h *Handler) Withdraw(c *gin.Context) {
-	fmt.Println("history-handler-Withdraw().")
-
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-	fmt.Println("history-handler-Withdraw()-user: ", user)
 
 	inp := new(InputWithdraw)
 	if err := c.BindJSON(inp); err != nil {
@@ -76,12 +67,10 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("history-handler-Withdraw()-InputWithdraw: ", inp)
-
 	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, inp.Sum)
 	if err != nil {
 		if err == history.ErrNotEnoughFunds { //если не достаточно баллов
-			h.l.Error("Not Enough Funds")
+			h.l.Info("Not Enough Funds")
 			c.AbortWithStatus(http.StatusPaymentRequired)
 		}
 

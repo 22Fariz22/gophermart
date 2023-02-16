@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
@@ -18,7 +17,6 @@ func NewOrderUseCase(orderRepo order.OrderRepository) *OrderUseCase {
 }
 
 func (o *OrderUseCase) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, number string) error {
-	fmt.Println("order-uc-PushOrder().")
 	eo := &entity.Order{ // можно ли убрать это или перенести это действие в репо?
 		ID:         "",
 		UserID:     "",

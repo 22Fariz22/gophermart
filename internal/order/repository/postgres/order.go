@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
+	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -27,8 +29,31 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 	return &OrderRepository{db}
 }
 
+type existOrder struct {
+	uID    string
+	number string
+}
+
 func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
-	_, err := o.Pool.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
+	var existOrd int
+
+	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existOrd)
+
+	userIDConv, err := strconv.Atoi(user.ID)
+	if err != nil {
+		l.Error("err in strconv.Atoi(user.ID)")
+		return err
+	}
+
+	if existOrd == userIDConv {
+		l.Info("Number Has Already Been Uploaded")
+		return order.ErrNumberHasAlreadyBeenUploaded
+	} else if existOrd != userIDConv {
+		l.Info("Number Has Already Been Uploaded By AnotherUser")
+		return order.ErrNumberHasAlreadyBeenUploadedByAnotherUser
+	}
+
+	_, err = o.Pool.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
 								VALUES ($1,$2,$3,$4)`,
 		user.ID, eo.Number, eo.Status, eo.UploadedAt)
 	if err != nil {
@@ -39,7 +64,6 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 }
 
 func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user *entity.User) ([]*entity.Order, error) {
-	fmt.Println("order-repo-GetOrders().")
 	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)
 	if err != nil {

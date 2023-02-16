@@ -7,8 +7,10 @@ import (
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/theplant/luhn"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,18 +43,41 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	if err != nil {
 		h.l.Error("Status Bad Request: ", err)
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
-	fmt.Println("order-handler-PushOrder()-payload: ", string(payload))
-	// еще добавить проверку Луна и к нему статус 422
+	//data := binary.BigEndian.Uint64(payload)
+
+	// проверка по формату номера заказа и по алгоритму Луна
+	conv, err := strconv.Atoi(string(payload))
+	if err != nil {
+		h.l.Error("error in conv.Atoi.")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	resLuhn := luhn.Valid(conv)
+	if resLuhn == false {
+		h.l.Error("error in algorithm Luhn")
+		c.AbortWithStatus(http.StatusUnprocessableEntity)
+		return
+	}
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
 	if err := h.useCase.PushOrder(c.Request.Context(), h.l, user, string(payload)); err != nil {
+		if err == order.ErrNumberHasAlreadyBeenUploaded {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+		if err == order.ErrNumberHasAlreadyBeenUploadedByAnotherUser {
+			c.AbortWithStatus(http.StatusConflict)
+			return
+		}
 		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.Status(http.StatusAccepted)
 }
 
 type ordersResponse struct {
@@ -83,6 +108,7 @@ func toOrders(os []*entity.Order) []*Order {
 	for i, o := range os {
 		out[i] = toOrder(o)
 	}
+
 	return out
 }
 

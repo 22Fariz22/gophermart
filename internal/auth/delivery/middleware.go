@@ -24,17 +24,20 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
+		m.l.Info("Status Unauthorized")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	headerParts := strings.Split(authHeader, " ")
 	if len(headerParts) != 2 {
+		m.l.Info("Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if headerParts[0] != "Bearer" {
+		m.l.Info("Not bearer.Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -43,8 +46,10 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
+			m.l.Info("Invalid Access Token.")
 			status = http.StatusUnauthorized
 		}
+		m.l.Info("Status Internal Server Error")
 		c.AbortWithStatus(status)
 		return
 	}

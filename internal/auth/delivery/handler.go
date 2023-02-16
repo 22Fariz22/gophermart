@@ -32,19 +32,23 @@ func (h *Handler) SignUp(c *gin.Context) {
 	inp := new(signInput)
 
 	if err := c.BindJSON(inp); err != nil {
+		h.l.Info("err BindJSON.")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	if err := h.useCase.SignUp(c.Request.Context(), h.l, inp.Login, inp.Password); err != nil {
 		if err == auth.ErrLoginIsAlreadyTaken {
+			h.l.Info("Err Login Is Already Taken")
 			c.AbortWithStatus(http.StatusConflict)
 			return
 		}
 		if err == auth.ErrBadRequest {
+			h.l.Info("Bad Request.")
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+		h.l.Info("Internal Server Error.")
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +64,9 @@ func (h *Handler) SignIn(c *gin.Context) {
 	inp := new(signInput)
 
 	if err := c.BindJSON(inp); err != nil {
+		h.l.Info("err BindJSON.")
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
@@ -68,6 +74,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 	fmt.Println("auth-handker-err(1): ", err)
 	if err != nil {
 		if err == auth.ErrUserNotFound {
+			h.l.Info("User Not Found.")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
