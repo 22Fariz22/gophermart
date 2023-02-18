@@ -17,6 +17,8 @@ import (
 	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
 	usecase2 "github.com/22Fariz22/gophermart/internal/order/usecase"
 	"github.com/22Fariz22/gophermart/internal/worker"
+	postgres5 "github.com/22Fariz22/gophermart/internal/worker/repository/postgres"
+	usecase4 "github.com/22Fariz22/gophermart/internal/worker/usecase"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
@@ -34,7 +36,7 @@ type App struct {
 	authUC    auth.UseCase
 	orderUC   order.UseCase
 	historyUC history.UseCase
-	workerUC worker.UseCase
+	workerUC  worker.UseCase
 }
 
 func NewApp(cfg *config.Config) *App {
@@ -49,7 +51,7 @@ func NewApp(cfg *config.Config) *App {
 	userRepo := postgres2.NewUserRepository(db)
 	orderRepo := postgres3.NewOrderRepository(db)
 	historyRepo := postgres4.NewHistoryRepository(db)
-	workerRepo := worker.NewWorkerPool(db)
+	workerRepo := postgres5.NewWorkerRepository(db)
 
 	return &App{
 		authUC: usecase.NewAuthUseCase(
@@ -60,7 +62,7 @@ func NewApp(cfg *config.Config) *App {
 		),
 		orderUC:   usecase2.NewOrderUseCase(orderRepo),
 		historyUC: usecase3.NewHistoryUseCase(historyRepo),
-		workerUC: ,
+		workerUC:  usecase4.NewWorkerUseCase(workerRepo),
 	}
 }
 
@@ -94,7 +96,7 @@ func (a *App) Run() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	go worker.CollectNewOrders(l) //запуск каждые две минуты
+	go worker.CollectNewOrders(a.workerUC, l) //запуск каждые две минуты
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {
