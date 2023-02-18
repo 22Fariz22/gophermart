@@ -48,6 +48,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 
 	// узнаем сколько всего баллов
 	err := pgxscan.Get(ctx, h.Pool, &withdraw_total, `SELECT withdraw_total FROM users WHERE user_id = $1`, user.ID)
+
 	if err != nil {
 		l.Error("history-repo-Get()-err: ", err)
 		return err

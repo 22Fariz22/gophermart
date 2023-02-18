@@ -1,4 +1,4 @@
-package delivery
+package http
 
 import (
 	"fmt"
@@ -27,8 +27,6 @@ type signInput struct {
 }
 
 func (h *Handler) SignUp(c *gin.Context) {
-	fmt.Println("auth-handler")
-
 	inp := new(signInput)
 
 	if err := c.BindJSON(inp); err != nil {
@@ -52,7 +50,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("handler-signUp-login&password:", inp.Login, inp.Password)
+
 	c.Status(http.StatusOK)
 }
 
@@ -70,8 +68,6 @@ func (h *Handler) SignIn(c *gin.Context) {
 	}
 
 	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
-	fmt.Println("auth-handler-token:", token)
-	fmt.Println("auth-handker-err(1): ", err)
 	if err != nil {
 		if err == auth.ErrUserNotFound {
 			h.l.Info("User Not Found.")
@@ -80,8 +76,5 @@ func (h *Handler) SignIn(c *gin.Context) {
 		}
 	}
 
-	//c.JSON(http.StatusOK, signInResponse{Token: token})
 	c.Header("Authorization", token)
-
-	//c.Status(http.StatusOK)
 }

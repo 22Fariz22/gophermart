@@ -1,4 +1,4 @@
-package delivery
+package http
 
 import (
 	"fmt"
@@ -40,6 +40,7 @@ type Number struct {
 
 func (h *Handler) PushOrder(c *gin.Context) {
 	payload, err := ioutil.ReadAll(c.Request.Body)
+	fmt.Println(payload)
 	if err != nil {
 		h.l.Error("Status Bad Request: ", err)
 		c.AbortWithStatus(http.StatusBadRequest)

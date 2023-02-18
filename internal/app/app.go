@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/config"
 	"github.com/22Fariz22/gophermart/internal/auth"
-	"github.com/22Fariz22/gophermart/internal/auth/delivery"
+	http2 "github.com/22Fariz22/gophermart/internal/auth/delivery/http"
 	postgres2 "github.com/22Fariz22/gophermart/internal/auth/repository/postgres"
 	"github.com/22Fariz22/gophermart/internal/auth/usecase"
 	"github.com/22Fariz22/gophermart/internal/history"
-	delivery3 "github.com/22Fariz22/gophermart/internal/history/delivery"
+	delivery3 "github.com/22Fariz22/gophermart/internal/history/delivery/http"
 	postgres4 "github.com/22Fariz22/gophermart/internal/history/repository/postgres"
 	usecase3 "github.com/22Fariz22/gophermart/internal/history/usecase"
 	"github.com/22Fariz22/gophermart/internal/order"
-	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery"
+	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery/http"
 	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
 	usecase2 "github.com/22Fariz22/gophermart/internal/order/usecase"
 	"github.com/22Fariz22/gophermart/pkg/logger"
@@ -72,10 +72,10 @@ func (a *App) Run() error {
 
 	// Set up http handlers
 	// SignUp/SignIn endpoints
-	delivery.RegisterHTTPEndpoints(router, a.authUC, l)
+	http2.RegisterHTTPEndpoints(router, a.authUC, l)
 
 	// API endpoints
-	authMiddleware := delivery.NewAuthMiddleware(a.authUC, l)
+	authMiddleware := http2.NewAuthMiddleware(a.authUC, l)
 	api := router.Group("/", authMiddleware)
 
 	delivery2.RegisterHTTPEndpointsOrder(api, a.orderUC, l)

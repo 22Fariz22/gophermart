@@ -7,7 +7,6 @@ import (
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
-	"log"
 	"strconv"
 	"time"
 )
@@ -67,6 +66,7 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)
 	if err != nil {
+		l.Error("err Pool.Query: ", err)
 		return nil, err
 	}
 
@@ -76,14 +76,12 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 		order := new(entity.Order)
 		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
-			log.Println("order-repo-GetOrders()-rows.Scan()-err: ", err)
+			l.Error("err rows.Scan(): ", err)
 			return nil, err
 		}
-		fmt.Println("order-repo-GetOrders()-order: ", order)
 		out = append(out, order)
 	}
 
-	fmt.Println("order-repo-GetOrders()-out: ", out)
 	return out, nil
 }
 

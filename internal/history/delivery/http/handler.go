@@ -1,4 +1,4 @@
-package delivery
+package http
 
 import (
 	"github.com/22Fariz22/gophermart/internal/auth"
