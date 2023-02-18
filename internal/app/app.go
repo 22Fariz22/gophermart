@@ -16,6 +16,7 @@ import (
 	delivery2 "github.com/22Fariz22/gophermart/internal/order/delivery/http"
 	postgres3 "github.com/22Fariz22/gophermart/internal/order/repository/postgres"
 	usecase2 "github.com/22Fariz22/gophermart/internal/order/usecase"
+	"github.com/22Fariz22/gophermart/internal/worker"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,7 @@ type App struct {
 	authUC    auth.UseCase
 	orderUC   order.UseCase
 	historyUC history.UseCase
+	workerUC worker.UseCase
 }
 
 func NewApp(cfg *config.Config) *App {
@@ -47,6 +49,7 @@ func NewApp(cfg *config.Config) *App {
 	userRepo := postgres2.NewUserRepository(db)
 	orderRepo := postgres3.NewOrderRepository(db)
 	historyRepo := postgres4.NewHistoryRepository(db)
+	workerRepo := worker.NewWorkerPool(db)
 
 	return &App{
 		authUC: usecase.NewAuthUseCase(
@@ -57,6 +60,7 @@ func NewApp(cfg *config.Config) *App {
 		),
 		orderUC:   usecase2.NewOrderUseCase(orderRepo),
 		historyUC: usecase3.NewHistoryUseCase(historyRepo),
+		workerUC: ,
 	}
 }
 
@@ -89,6 +93,8 @@ func (a *App) Run() error {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
+	go worker.CollectNewOrders(l) //запуск каждые две минуты
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {
