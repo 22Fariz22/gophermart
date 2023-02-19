@@ -45,12 +45,17 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 }
 
 func (w *WorkerRepository) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
-	for i := range orders {
-		fmt.Println("order", i)
-	}
+	fmt.Println("in repo-SendToAccrualBox()")
+
 	//requestURL := fmt.Sprintf("localhost:8081/api/orders/%d",number)
 	//
 	//http.NewRequest(http.MethodGet, "localhost:8081/api/orders/", nil)
+	number := "12345678903"
+	req, err := http.NewRequest("GET", "localhost:8081/api/orders/"+number, nil)
+	if req != nil {
+		fmt.Println("NewRequest() err:", err)
+	}
+	fmt.Println("req:", req)
 
 	return nil
 }

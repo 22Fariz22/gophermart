@@ -40,10 +40,10 @@ type workerData struct {
 func CollectNewOrders(uc UseCase, l logger.Interface, httpServer *http.Server) []*entity.Order {
 	workers := NewWorkerPool(uc, l, httpServer)
 
-	for {
-		workers.RunWorkers(5)
-		defer workers.Stop()
+	workers.RunWorkers(5)
+	defer workers.Stop()
 
+	for {
 		time.Sleep(4 * time.Second)
 
 		newOrders, err := workers.repository.CheckNewOrders(l) //получаем список новых ордеров
@@ -79,6 +79,7 @@ func (w *Pool) RunWorkers(count int) {
 		fmt.Println("start RunWorkers() for... count")
 		w.wg.Add(1)
 		go func() {
+			fmt.Println("RunWorkers in go func")
 			defer w.wg.Done()
 			for {
 				select {

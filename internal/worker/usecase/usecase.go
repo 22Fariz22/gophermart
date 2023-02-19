@@ -6,7 +6,6 @@ import (
 	"github.com/22Fariz22/gophermart/internal/worker"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"net/http"
-	"time"
 )
 
 type WorkerUseCase struct {
@@ -20,14 +19,15 @@ func NewWorkerUseCase(repo worker.WorkerRepository) *WorkerUseCase {
 }
 
 func (w *WorkerUseCase) CheckNewOrders(l logger.Interface) ([]*entity.Order, error) {
-	time.Sleep(500 * time.Millisecond)
 	fmt.Println("in uc-CheckNewOrders()")
-	return w.CheckNewOrders(l)
+	//return w.CheckNewOrders(l)
+	return w.WorkerRepo.CheckNewOrders(l)
 
 }
 
 func (w *WorkerUseCase) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
-	return w.SendToAccrualBox(orders, httpServer)
+	fmt.Println("in uc-SendToAccrualBox()")
+	return w.WorkerRepo.SendToAccrualBox(orders, httpServer)
 }
 
 func (w *WorkerUseCase) SendToWaitListChannels() {
