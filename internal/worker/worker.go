@@ -2,6 +2,7 @@ package worker
 
 import (
 	"errors"
+	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"net/http"
@@ -31,26 +32,29 @@ func NewWorkerPool(repo UseCase, l logger.Interface, httpServer *http.Server) *P
 	}
 }
 
+type workerData struct {
+	orders []*entity.Order
+}
+
 //  функция которая каждые 2 мин забирает из таблицы ордеры со статусом NEW и кладет их в каналы
 func CollectNewOrders(uc UseCase, l logger.Interface, httpServer *http.Server) []*entity.Order {
 	workers := NewWorkerPool(uc, l, httpServer)
 
 	for {
+		workers.RunWorkers(5)
+		defer workers.Stop()
+
 		time.Sleep(4 * time.Second)
 
-		workers.RunWorkers(10)
 		newOrders, err := workers.repository.CheckNewOrders(l) //получаем список новых ордеров
+		fmt.Println("newOrders: ", newOrders)
 		if err != nil {
 			l.Info("err in CheckNewOrders(): ", err)
 		}
+
 		workers.AddJob(newOrders)
 	}
 
-	return nil
-}
-
-type workerData struct {
-	orders []*entity.Order
 }
 
 type NewOrders struct {
@@ -70,21 +74,28 @@ func (w *Pool) AddJob(arr []*entity.Order) error {
 
 // далее этот список передаем воркеру
 func (w *Pool) RunWorkers(count int) {
+	fmt.Println("start RunWorkers()")
 	for i := 0; i < count; i++ {
+		fmt.Println("start RunWorkers() for... count")
 		w.wg.Add(1)
 		go func() {
 			defer w.wg.Done()
 			for {
 				select {
 				case <-w.shutDown:
+					fmt.Println("case <-w.shutDown.")
 					//w.l.Info("channels are shutdown.")
 					return
 				case orders, ok := <-w.mainCh:
+					fmt.Println("case <-w.mainCh.")
 					if !ok {
+						fmt.Println("case <-w.mainCh !ok")
 						return
 					}
+					fmt.Println("SendToAccrualBox")
 					err := w.repository.SendToAccrualBox(orders.orders, w.httpServer)
 					if err != nil {
+						fmt.Println("SendToAccrualBox err")
 						w.l.Info("err in SendToAccrualBox():", err)
 					}
 				}

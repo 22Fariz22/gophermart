@@ -18,6 +18,8 @@ func NewWorkerRepository(db *postgres.Postgres) *WorkerRepository {
 }
 
 func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, error) {
+	fmt.Println("in repo-CheckNewOrders()")
+
 	ctx := context.Background()
 	rows, err := w.Pool.Query(ctx, `SELECT number FROM orders
 									WHERE order_status = 'NEW'`)
@@ -36,6 +38,7 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 			return nil, err
 		}
 		out = append(out, order)
+		fmt.Println("out rows: ", out)
 	}
 
 	return out, nil

@@ -8,7 +8,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/theplant/luhn"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -39,14 +39,13 @@ type Number struct {
 }
 
 func (h *Handler) PushOrder(c *gin.Context) {
-	payload, err := ioutil.ReadAll(c.Request.Body)
-	fmt.Println(payload)
+	payload, err := io.ReadAll(c.Request.Body)
+
 	if err != nil {
 		h.l.Error("Status Bad Request: ", err)
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	//data := binary.BigEndian.Uint64(payload)
 
 	// проверка по формату номера заказа и по алгоритму Луна
 	conv, err := strconv.Atoi(string(payload))
