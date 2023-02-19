@@ -3,6 +3,8 @@ package usecase
 import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/worker"
+	"github.com/22Fariz22/gophermart/pkg/logger"
+	"net/http"
 )
 
 type WorkerUseCase struct {
@@ -15,14 +17,12 @@ func NewWorkerUseCase(repo worker.WorkerRepository) *WorkerUseCase {
 	}
 }
 
-func (w *WorkerUseCase) CheckNewOrders() ([]*entity.Order, error) {
-	//TODO implement me
-	panic("implement me")
+func (w *WorkerUseCase) CheckNewOrders(l logger.Interface) ([]*entity.Order, error) {
+	return w.CheckNewOrders(l)
 }
 
-func (w *WorkerUseCase) SendToOrdersCannels(orders []*entity.Order) error {
-	//TODO implement me
-	panic("implement me")
+func (w *WorkerUseCase) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
+	return w.SendToAccrualBox(orders, httpServer)
 }
 
 func (w *WorkerUseCase) SendToWaitListChannels() {
@@ -30,7 +30,7 @@ func (w *WorkerUseCase) SendToWaitListChannels() {
 	panic("implement me")
 }
 
-func (w *WorkerUseCase) SendToAccrualBox(orders []worker.NewOrders) error {
-
-	return nil
-}
+//func (w *WorkerUseCase) SendToOrdersCannels(orders []*entity.Order) error {
+//	//TODO implement me
+//	panic("implement me")
+//}

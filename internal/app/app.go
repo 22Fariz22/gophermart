@@ -96,7 +96,7 @@ func (a *App) Run() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	go worker.CollectNewOrders(a.workerUC, l) //запуск каждые две минуты
+	go worker.CollectNewOrders(a.workerUC, l, a.httpServer) //запуск каждые две минуты
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {

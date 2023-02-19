@@ -4,39 +4,42 @@ import (
 	"errors"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
+	"net/http"
 	"sync"
 	"time"
 )
 
 type Pool struct {
+	httpServer *http.Server
+	l          logger.Interface
 	wg         sync.WaitGroup
 	once       sync.Once
 	shutDown   chan struct{}
 	mainCh     chan workerData
 	repository UseCase
-	l          logger.Interface
 }
 
-func NewWorkerPool(repo UseCase, l logger.Interface) *Pool {
+func NewWorkerPool(repo UseCase, l logger.Interface, httpServer *http.Server) *Pool {
 	return &Pool{
+		httpServer: httpServer,
+		l:          l,
 		wg:         sync.WaitGroup{},
 		once:       sync.Once{},
 		shutDown:   make(chan struct{}),
 		mainCh:     make(chan workerData, 10),
 		repository: repo,
-		l:          l,
 	}
 }
 
-// создаем функцию которая каждые 2 мин забирает из таблицы ордеры со статусом NEW и кдадет их в каналы
-func CollectNewOrders(uc UseCase, l logger.Interface) []*entity.Order {
-	workers := NewWorkerPool(uc, l)
+//  функция которая каждые 2 мин забирает из таблицы ордеры со статусом NEW и кладет их в каналы
+func CollectNewOrders(uc UseCase, l logger.Interface, httpServer *http.Server) []*entity.Order {
+	workers := NewWorkerPool(uc, l, httpServer)
 
 	for {
-		time.Sleep(120 * time.Second)
+		time.Sleep(4 * time.Second)
 
-		workers.RunWorkers(100)
-		newOrders, err := workers.repository.CheckNewOrders()
+		workers.RunWorkers(10)
+		newOrders, err := workers.repository.CheckNewOrders(l) //получаем список новых ордеров
 		if err != nil {
 			l.Info("err in CheckNewOrders(): ", err)
 		}
@@ -80,7 +83,7 @@ func (w *Pool) RunWorkers(count int) {
 					if !ok {
 						return
 					}
-					err := w.repository.SendToOrdersCannels(orders.orders)
+					err := w.repository.SendToAccrualBox(orders.orders, w.httpServer)
 					if err != nil {
 						w.l.Info("err in SendToAccrualBox():", err)
 					}
