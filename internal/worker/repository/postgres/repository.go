@@ -6,7 +6,11 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"io"
+	"log"
 	"net/http"
+	"net/url"
+	"path"
 )
 
 type WorkerRepository struct {
@@ -47,15 +51,37 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 func (w *WorkerRepository) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
 	fmt.Println("in repo-SendToAccrualBox()")
 
-	//requestURL := fmt.Sprintf("localhost:8081/api/orders/%d",number)
-	//
-	//http.NewRequest(http.MethodGet, "localhost:8081/api/orders/", nil)
 	number := "12345678903"
-	req, err := http.NewRequest("GET", "localhost:8081/api/orders/"+number, nil)
-	if req != nil {
-		fmt.Println("NewRequest() err:", err)
+	//req, err := http.NewRequest("GET", "localhost:8081/api/orders/"+number, nil)
+	//if req != nil {
+	//	fmt.Println("NewRequest() err:", err)
+	//}
+	//fmt.Println("req:", req)
+
+	AccrualSystemAddress := "http://127.0.0.1:8080"
+
+	reqURL, err := url.Parse(AccrualSystemAddress)
+	fmt.Println("url.Parse")
+	if err != nil {
+		log.Fatalln("Wrong accrual system URL:", err)
 	}
-	fmt.Println("req:", req)
+
+	reqURL.Path = path.Join("/api/orders/", number)
+	fmt.Println("path.Join")
+	r, err := http.Get(reqURL.String())
+	fmt.Println("http.Get")
+	if err != nil {
+		log.Println("Can't get order updates from external API:", err)
+	}
+
+	body, err := io.ReadAll(r.Body)
+	fmt.Println("io.ReadAll(r.Body)")
+	defer r.Body.Close()
+
+	if err != nil {
+		log.Println("Can't read response body:", err)
+	}
+	fmt.Println("body:", body)
 
 	return nil
 }

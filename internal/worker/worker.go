@@ -44,7 +44,7 @@ func CollectNewOrders(uc UseCase, l logger.Interface, httpServer *http.Server) [
 	defer workers.Stop()
 
 	for {
-		time.Sleep(4 * time.Second)
+		time.Sleep(2 * time.Second)
 
 		newOrders, err := workers.repository.CheckNewOrders(l) //получаем список новых ордеров
 		fmt.Println("newOrders: ", newOrders)
