@@ -52,11 +52,6 @@ func (w *WorkerRepository) SendToAccrualBox(orders []*entity.Order, httpServer *
 	fmt.Println("in repo-SendToAccrualBox()")
 
 	number := "12345678903"
-	//req, err := http.NewRequest("GET", "localhost:8081/api/orders/"+number, nil)
-	//if req != nil {
-	//	fmt.Println("NewRequest() err:", err)
-	//}
-	//fmt.Println("req:", req)
 
 	AccrualSystemAddress := "http://127.0.0.1:8080"
 
@@ -90,8 +85,3 @@ func (w *WorkerRepository) SendToWaitListChannels() {
 	//TODO implement me
 	panic("implement me")
 }
-
-//func (w *WorkerRepository) SendToOrdersCannels(orders []*entity.Order) error {
-//	//TODO implement me
-//	panic("implement me")
-//}

@@ -34,8 +34,3 @@ func (w *WorkerUseCase) SendToWaitListChannels() {
 	//TODO implement me
 	panic("implement me")
 }
-
-//func (w *WorkerUseCase) SendToOrdersCannels(orders []*entity.Order) error {
-//	//TODO implement me
-//	panic("implement me")
-//}

@@ -8,9 +8,6 @@ import (
 
 type UseCase interface {
 	CheckNewOrders(l logger.Interface) ([]*entity.Order, error)
-
 	SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error
 	SendToWaitListChannels()
-	//SendToOrdersCannels(orders []*entity.Order) error
-
 }
