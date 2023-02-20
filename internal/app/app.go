@@ -3,7 +3,12 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/22Fariz22/gophermart/config"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/22Fariz22/gophermart/internal/auth"
 	http2 "github.com/22Fariz22/gophermart/internal/auth/delivery/http"
 	postgres2 "github.com/22Fariz22/gophermart/internal/auth/repository/postgres"
@@ -23,23 +28,17 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 type App struct {
 	httpServer *http.Server
-
-	authUC    auth.UseCase
-	orderUC   order.UseCase
-	historyUC history.UseCase
-	workerUC  worker.UseCase
+	authUC     auth.UseCase
+	orderUC    order.UseCase
+	historyUC  history.UseCase
+	workerUC   worker.UseCase
 }
 
-func NewApp(cfg *config.Config) *App {
+func NewApp() *App {
 
 	// Repository
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
@@ -96,7 +95,7 @@ func (a *App) Run() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	worker.CollectNewOrders(a.workerUC, l, a.httpServer) //запуск по тикеру
+	worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {

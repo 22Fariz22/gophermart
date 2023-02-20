@@ -3,11 +3,10 @@ package worker
 import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
-	"net/http"
 )
 
 type WorkerRepository interface {
 	CheckNewOrders(l logger.Interface) ([]*entity.Order, error)
-	SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error
+	SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error)
 	SendToWaitListChannels()
 }

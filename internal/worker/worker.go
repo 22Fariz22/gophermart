@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
-	"net/http"
 	"sync"
 	"time"
 )
 
 type Pool struct {
-	httpServer *http.Server
 	l          logger.Interface
 	wg         sync.WaitGroup
 	once       sync.Once
@@ -20,9 +18,8 @@ type Pool struct {
 	repository UseCase
 }
 
-func NewWorkerPool(repo UseCase, l logger.Interface, httpServer *http.Server) *Pool {
+func NewWorkerPool(repo UseCase, l logger.Interface) *Pool {
 	return &Pool{
-		httpServer: httpServer,
 		l:          l,
 		wg:         sync.WaitGroup{},
 		once:       sync.Once{},
@@ -37,8 +34,8 @@ type workerData struct {
 }
 
 //  функция которая каждые 2 мин забирает из таблицы ордеры со статусом NEW и кладет их в каналы
-func CollectNewOrders(uc UseCase, l logger.Interface, httpServer *http.Server) []*entity.Order {
-	workers := NewWorkerPool(uc, l, httpServer)
+func CollectNewOrders(uc UseCase, l logger.Interface) []*entity.Order {
+	workers := NewWorkerPool(uc, l)
 
 	workers.RunWorkers(5)
 	defer workers.Stop()
@@ -94,11 +91,12 @@ func (w *Pool) RunWorkers(count int) {
 						return
 					}
 					fmt.Println("SendToAccrualBox")
-					err := w.repository.SendToAccrualBox(orders.orders, w.httpServer)
+					respAccrual, err := w.repository.SendToAccrualBox(w.l, orders.orders)
 					if err != nil {
 						fmt.Println("SendToAccrualBox err")
 						w.l.Info("err in SendToAccrualBox():", err)
 					}
+					fmt.Println("respAccrual: ", respAccrual)
 				}
 			}
 		}()

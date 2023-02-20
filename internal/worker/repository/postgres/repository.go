@@ -2,12 +2,13 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"github.com/spf13/viper"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -48,40 +49,111 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 	return out, nil
 }
 
-func (w *WorkerRepository) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
+//SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
+func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
 	fmt.Println("in repo-SendToAccrualBox()")
 
-	number := "12345678903"
+	var arrRespAccr []*entity.History // структура ответа от accrual system
+	var respAccr *entity.History
 
-	AccrualSystemAddress := "http://127.0.0.1:8080"
+	for _, v := range orders {
+		reqURL, err := url.Parse(viper.GetString("r")) // считываем из env переменную ACCRUAL_SYSTEM_ADDRESS
+		fmt.Println("url.Parse")
+		if err != nil {
+			l.Error("incorrect ACCRUAL_SYSTEM_ADDRESS:", err)
+			return nil, err // выходим из цикла, если адрес accrual system некорректный
+		}
 
-	reqURL, err := url.Parse(AccrualSystemAddress)
-	fmt.Println("url.Parse")
-	if err != nil {
-		log.Fatalln("Wrong accrual system URL:", err)
+		reqURL.Path = path.Join("/api/orders/", v.Number)
+		fmt.Println("path.Join")
+
+		r, err := http.Get(reqURL.String())
+		fmt.Println("http.Get")
+		if err != nil {
+			l.Error("can't do request: ", err)
+			//что возвращаем? выходим из цикла?
+		}
+
+		body, err := io.ReadAll(r.Body)
+		fmt.Println("io.ReadAll(r.Body)")
+		defer r.Body.Close()
+
+		if err != nil {
+			l.Error("Can't read response body: ", err)
+			//что возвращаем? выходим из цикла?
+		}
+		fmt.Println("body: ", string(body))
+
+		// unmarshall
+		err = json.Unmarshal(body, &respAccr)
+		if err != nil {
+			l.Error("Unmarshal error: ", err)
+		}
+
+		arrRespAccr = append(arrRespAccr, respAccr)
 	}
 
-	reqURL.Path = path.Join("/api/orders/", number)
-	fmt.Println("path.Join")
-	r, err := http.Get(reqURL.String())
-	fmt.Println("http.Get")
-	if err != nil {
-		log.Println("Can't get order updates from external API:", err)
-	}
-
-	body, err := io.ReadAll(r.Body)
-	fmt.Println("io.ReadAll(r.Body)")
-	defer r.Body.Close()
-
-	if err != nil {
-		log.Println("Can't read response body:", err)
-	}
-	fmt.Println("body:", body)
-
-	return nil
+	return arrRespAccr, nil
 }
 
 func (w *WorkerRepository) SendToWaitListChannels() {
 	//TODO implement me
 	panic("implement me")
 }
+
+//func (p *HTTPClientSetting) GetAccrualResponse(orderNumber string) (*AccrualSystemResp, error) {
+//
+//	url := p.accrualAddr + "/api/orders/" + orderNumber
+//
+//	fmt.Printf("URL REQUEST IS %s \n", url)
+//
+//	req, err := http.NewRequestWithContext(context.TODO(), "GET", url, http.NoBody)
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	resp, err := p.httpClient.Do(req)
+//
+//	if err != nil {
+//		fmt.Printf("Err send req %v \n", err)
+//		return nil, err
+//	}
+//
+//	defer resp.Body.Close()
+//
+//	body, err := io.ReadAll(resp.Body)
+//
+//	if err != nil {
+//		fmt.Printf("Err read resp %v \n", err)
+//
+//		return nil, err
+//	}
+//
+//	if resp.StatusCode == 429 {
+//		fmt.Println("Too many request, retrying after 60 sec...")
+//		return nil, ErrTooManyRequest
+//	}
+//
+//	response := AccrualSystemResp{}
+//
+//	fmt.Printf("Body is %+v \n", body)
+//
+//	if len(body) == 0 {
+//		fmt.Println("Empty response!")
+//		fmt.Printf("Status Code is %d \n", resp.StatusCode)
+//		fmt.Printf("Order id is %s \n", orderNumber)
+//		return nil, ErrEmptyResponse
+//	}
+//
+//	err = json.Unmarshal(body, &response)
+//
+//	if err != nil {
+//		fmt.Printf("Err unmarshal resp %v \n", err)
+//
+//		return nil, err
+//	}
+//
+//	fmt.Printf("RESP IS %+v \n", response)
+//	return &response, nil
+//}

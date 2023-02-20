@@ -5,7 +5,6 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/worker"
 	"github.com/22Fariz22/gophermart/pkg/logger"
-	"net/http"
 )
 
 type WorkerUseCase struct {
@@ -25,9 +24,9 @@ func (w *WorkerUseCase) CheckNewOrders(l logger.Interface) ([]*entity.Order, err
 
 }
 
-func (w *WorkerUseCase) SendToAccrualBox(orders []*entity.Order, httpServer *http.Server) error {
+func (w *WorkerUseCase) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
 	fmt.Println("in uc-SendToAccrualBox()")
-	return w.WorkerRepo.SendToAccrualBox(orders, httpServer)
+	return w.WorkerRepo.SendToAccrualBox(l, orders)
 }
 
 func (w *WorkerUseCase) SendToWaitListChannels() {
