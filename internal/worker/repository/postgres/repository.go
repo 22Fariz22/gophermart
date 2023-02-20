@@ -56,7 +56,7 @@ type respAccr *entity.History
 func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
 	fmt.Println("in repo-SendToAccrualBox()")
 
-	var arrRespAcc arrRespAccr
+	var arrResAcc arrRespAccr
 	var respAcc respAccr
 
 	accrualSystemAddress := viper.GetString("r")
@@ -100,88 +100,34 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 			l.Error("Unmarshal error: ", err)
 		}
 
-		arrRespAcc = append(arrRespAcc, respAcc)
+		arrResAcc = append(arrResAcc, respAcc)
 	}
 
-	return arrRespAcc, nil
+	return arrResAcc, nil
 }
 
 func mockResponse(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
 	fmt.Println("mockResponse().")
 
-	var arrResAcc arrRespAccr
-	var respAcc respAccr
+	var arrRA arrRespAccr
 
 	for _, v := range orders {
-		err := json.Unmarshal(v, &respAcc)
-		if err != nil {
-			l.Error("Unmarshal error: ", err)
+		fmt.Println("range v in orders: ", v)
+		respAcc := entity.History{
+			ID:     v.ID,
+			UserID: v.UserID,
+			Number: v.Number,
+			Status: "PROCESSED",
+			Sum:    777,
 		}
-
-		arrResAcc = append(arrResAcc, respAcc)
+		arrRA = append(arrRA, &respAcc)
 	}
 
-	return nil, nil
+	fmt.Println("ArrRA: ", arrRA)
+	return arrRA, nil
 }
 
 func (w *WorkerRepository) SendToWaitListChannels() {
 	//TODO implement me
 	panic("implement me")
 }
-
-//func (p *HTTPClientSetting) GetAccrualResponse(orderNumber string) (*AccrualSystemResp, error) {
-//
-//	url := p.accrualAddr + "/api/orders/" + orderNumber
-//
-//	fmt.Printf("URL REQUEST IS %s \n", url)
-//
-//	req, err := http.NewRequestWithContext(context.TODO(), "GET", url, http.NoBody)
-//
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	resp, err := p.httpClient.Do(req)
-//
-//	if err != nil {
-//		fmt.Printf("Err send req %v \n", err)
-//		return nil, err
-//	}
-//
-//	defer resp.Body.Close()
-//
-//	body, err := io.ReadAll(resp.Body)
-//
-//	if err != nil {
-//		fmt.Printf("Err read resp %v \n", err)
-//
-//		return nil, err
-//	}
-//
-//	if resp.StatusCode == 429 {
-//		fmt.Println("Too many request, retrying after 60 sec...")
-//		return nil, ErrTooManyRequest
-//	}
-//
-//	response := AccrualSystemResp{}
-//
-//	fmt.Printf("Body is %+v \n", body)
-//
-//	if len(body) == 0 {
-//		fmt.Println("Empty response!")
-//		fmt.Printf("Status Code is %d \n", resp.StatusCode)
-//		fmt.Printf("Order id is %s \n", orderNumber)
-//		return nil, ErrEmptyResponse
-//	}
-//
-//	err = json.Unmarshal(body, &response)
-//
-//	if err != nil {
-//		fmt.Printf("Err unmarshal resp %v \n", err)
-//
-//		return nil, err
-//	}
-//
-//	fmt.Printf("RESP IS %+v \n", response)
-//	return &response, nil
-//}
