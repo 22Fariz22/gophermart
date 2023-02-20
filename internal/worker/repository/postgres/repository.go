@@ -49,15 +49,25 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 	return out, nil
 }
 
+type arrRespAccr []*entity.History // структура ответа от accrual system
+type respAccr *entity.History
+
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
 func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
 	fmt.Println("in repo-SendToAccrualBox()")
 
-	var arrRespAccr []*entity.History // структура ответа от accrual system
-	var respAccr *entity.History
+	var arrRespAcc arrRespAccr
+	var respAcc respAccr
+
+	accrualSystemAddress := viper.GetString("r")
+
+	//возвращаем мок, если запускаем приложение у себя локально
+	if accrualSystemAddress == "mock" {
+		return mockResponse(l, orders)
+	}
 
 	for _, v := range orders {
-		reqURL, err := url.Parse(viper.GetString("r")) // считываем из env переменную ACCRUAL_SYSTEM_ADDRESS
+		reqURL, err := url.Parse(accrualSystemAddress) // считываем из env переменную ACCRUAL_SYSTEM_ADDRESS
 		fmt.Println("url.Parse")
 		if err != nil {
 			l.Error("incorrect ACCRUAL_SYSTEM_ADDRESS:", err)
@@ -85,15 +95,33 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 		fmt.Println("body: ", string(body))
 
 		// unmarshall
-		err = json.Unmarshal(body, &respAccr)
+		err = json.Unmarshal(body, &respAcc)
 		if err != nil {
 			l.Error("Unmarshal error: ", err)
 		}
 
-		arrRespAccr = append(arrRespAccr, respAccr)
+		arrRespAcc = append(arrRespAcc, respAcc)
 	}
 
-	return arrRespAccr, nil
+	return arrRespAcc, nil
+}
+
+func mockResponse(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
+	fmt.Println("mockResponse().")
+
+	var arrResAcc arrRespAccr
+	var respAcc respAccr
+
+	for _, v := range orders {
+		err := json.Unmarshal(v, &respAcc)
+		if err != nil {
+			l.Error("Unmarshal error: ", err)
+		}
+
+		arrResAcc = append(arrResAcc, respAcc)
+	}
+
+	return nil, nil
 }
 
 func (w *WorkerRepository) SendToWaitListChannels() {
