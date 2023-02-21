@@ -7,6 +7,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"strconv"
 	"time"
 )
@@ -29,36 +30,68 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 }
 
 type existOrder struct {
-	uID    string
-	number string
+	uID    string `db:"user_id"`
+	number string `db:"number"`
 }
 
 func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
-	var existOrd int
+	var existUser int
+	var eOrd existOrder
 
-	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existOrd)
+	fmt.Println("order-PushOrder()-number:", eo.Number)
+	// поменять на другой запрос
+	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existUser)
 
-	userIDConv, err := strconv.Atoi(user.ID)
+	if err := pgxscan.Get(ctx, o.Pool, &eOrd, `SELECT user_id, number FROM orders where number = $1;`,
+		eo.ID, eo.Number); err != nil {
+		l.Info("err in pgxsan.Get():", err)
+	}
+	fmt.Println("eOrd: ", eOrd)
+
+	existUserConvToStr, err := strconv.Atoi(user.ID)
 	if err != nil {
 		l.Error("err in strconv.Atoi(user.ID)")
 		return err
 	}
 
-	if existOrd == userIDConv {
+	fmt.Println(" existUser == existUserConvToStr", existUser, existUserConvToStr)
+	if existUser == existUserConvToStr {
 		l.Info("Number Has Already Been Uploaded")
 		return order.ErrNumberHasAlreadyBeenUploaded
-	} else if existOrd != userIDConv {
+	}
+	if existUser != existUserConvToStr {
 		l.Info("Number Has Already Been Uploaded By AnotherUser")
 		return order.ErrNumberHasAlreadyBeenUploadedByAnotherUser
 	}
 
-	_, err = o.Pool.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
+	tx, err := o.Pool.Begin(ctx)
+	if err != nil {
+		l.Error("tx err: ", err)
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
 								VALUES ($1,$2,$3,$4)`,
 		user.ID, eo.Number, eo.Status, eo.UploadedAt)
 	if err != nil {
 		fmt.Println("db-order-PushOrder()-err(1): ", err)
 		return err
 	}
+
+	_, err = tx.Exec(ctx, `INSERT INTO history (user_id, number, order_status, uploaded_at)
+								VALUES ($1,$2,$3,$4)`,
+		user.ID, eo.Number, eo.Status, eo.UploadedAt)
+	if err != nil {
+		fmt.Println("db-order-PushOrder()-err(1): ", err)
+		return err
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		l.Error("commit err: ", err)
+		return err
+	}
+
 	return nil
 }
 

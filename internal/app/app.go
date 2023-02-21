@@ -57,7 +57,7 @@ func NewApp() *App {
 			userRepo,
 			"hash_salt",
 			[]byte("signing_key"),
-			time.Duration(86400),
+			time.Duration(8640000),
 		),
 		orderUC:   usecase2.NewOrderUseCase(orderRepo),
 		historyUC: usecase3.NewHistoryUseCase(historyRepo),
@@ -88,14 +88,14 @@ func (a *App) Run() error {
 
 	// HTTP Server
 	a.httpServer = &http.Server{
-		Addr:           ":" + "8080",
+		Addr:           ":" + "8088",
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
+	//go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {

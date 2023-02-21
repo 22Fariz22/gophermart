@@ -41,7 +41,7 @@ func CollectNewOrders(uc UseCase, l logger.Interface) []*entity.Order {
 	defer workers.Stop()
 
 	for {
-		time.Sleep(2 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		newOrders, err := workers.repository.CheckNewOrders(l) //получаем список новых ордеров
 		fmt.Println("newOrders: ", newOrders)
