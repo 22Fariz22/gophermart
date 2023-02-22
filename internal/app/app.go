@@ -40,11 +40,12 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) *App {
+
 	log.Println("viper.GetString('a'): ", viper.GetString("a"))
 	log.Println("viper.GetString('d'): ", viper.GetString("d"))
 	log.Println("viper.GetString('r'): ", viper.GetString("r"))
 
-	log.Println("cfg : ", cfg)
+	log.Println("cfg DatabaseURI: ", cfg.DatabaseURI)
 
 	// Repository
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
