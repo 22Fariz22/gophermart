@@ -28,12 +28,12 @@ func NewAuthUseCase(
 	userRepo auth.UserRepository,
 	hashSalt string,
 	signingKey []byte,
-	tokenTTLSec time.Duration) *AuthUseCase {
+	tokenTTLScnd time.Duration) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:       userRepo,
 		hashSalt:       hashSalt,
 		signingKey:     signingKey,
-		expireDuration: time.Second * tokenTTLSec,
+		expireDuration: time.Second * tokenTTLScnd,
 	}
 }
 
