@@ -88,12 +88,13 @@ func (a *App) Run() error {
 
 	// HTTP Server
 	a.httpServer = &http.Server{
-		Addr:           viper.GetString("a"), //":" + "8080", //8080
+		Addr:           ":" + "8088", //8080
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+	fmt.Println("app-a.httpServer:,", a.httpServer)
 
 	go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
 
