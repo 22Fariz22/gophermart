@@ -78,18 +78,14 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	// добавить проверку алгоритма Луна, при ошибке который верет 422
 
 	c.Status(http.StatusOK)
 }
 
-//type HistoryResponse struct {
-//	HistoryResp []*entity.History `json:"history_resp"`
-//}
 type HistoryResp struct {
-	Number      string    `json:"number"`
-	Sum         int       `json:"sum"`
-	ProcessedAt time.Time `json:"processed_at"`
+	Order       string `json:"order"`
+	Sum         int    `json:"sum"`
+	ProcessedAt string `json:"processed_at"`
 }
 
 func (h *Handler) InfoWithdrawal(c *gin.Context) {
@@ -105,5 +101,25 @@ func (h *Handler) InfoWithdrawal(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 
-	c.JSON(http.StatusOK, hist)
+	c.JSON(http.StatusOK, toHistoryResps(hist))
+}
+
+func toHistoryResps(eh []*entity.History) []*HistoryResp {
+	out := make([]*HistoryResp, len(eh))
+
+	for i, o := range eh {
+		out[i] = toHistoryResp(o)
+	}
+
+	return out
+}
+
+func toHistoryResp(h *entity.History) *HistoryResp {
+	strTime := h.ProcessedAt.Format(time.RFC3339)
+
+	return &HistoryResp{
+		Order:       h.Number,
+		Sum:         h.Sum,
+		ProcessedAt: strTime,
+	}
 }
