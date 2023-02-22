@@ -19,8 +19,8 @@ func NewHistoryRepository(db *postgres.Postgres) *HistoryRepository {
 }
 
 type UserBalance struct {
-	Balance_total  int
-	Withdraw_total int
+	BalanceTotal  int
+	WithdrawTotal int
 }
 
 func (h *HistoryRepository) GetBalance(ctx context.Context, l logger.Interface, user *entity.User) (*entity.User, error) {
@@ -36,18 +36,18 @@ func (h *HistoryRepository) GetBalance(ctx context.Context, l logger.Interface, 
 	}
 	fmt.Println("history-repo-GetBalance()-ub: ", ub)
 
-	u.BalanceTotal = ub.Balance_total
-	u.WithdrawTotal = ub.Withdraw_total
+	u.BalanceTotal = ub.BalanceTotal
+	u.WithdrawTotal = ub.WithdrawTotal
 
 	return &u, nil
 }
 
 func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, user *entity.User,
 	number string, withdrawResp int) error {
-	withdraw_total := 0
+	withdrawTotal := 0
 
 	// узнаем сколько всего баллов
-	err := pgxscan.Get(ctx, h.Pool, &withdraw_total, `SELECT withdraw_total FROM users WHERE user_id = $1`, user.ID)
+	err := pgxscan.Get(ctx, h.Pool, &withdrawTotal, `SELECT withdraw_total FROM users WHERE user_id = $1`, user.ID)
 
 	if err != nil {
 		l.Error("history-repo-Get()-err: ", err)
@@ -55,7 +55,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	}
 
 	//сравниваем наш баланс с запросом
-	if withdraw_total < withdrawResp || withdrawResp < 0 {
+	if withdrawTotal < withdrawResp || withdrawResp < 0 {
 		l.Error("history-repo-Withdraw()- withdraw_total<withdrawResp): ", history.ErrNotEnoughFunds)
 		return history.ErrNotEnoughFunds
 	}

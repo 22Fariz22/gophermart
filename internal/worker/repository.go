@@ -8,5 +8,5 @@ import (
 type WorkerRepository interface {
 	CheckNewOrders(l logger.Interface) ([]*entity.Order, error)
 	SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error)
-	SendToWaitListChannels()
+	//SendToWaitListChannels()
 }

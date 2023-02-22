@@ -28,12 +28,12 @@ func NewAuthUseCase(
 	userRepo auth.UserRepository,
 	hashSalt string,
 	signingKey []byte,
-	tokenTTLSeconds time.Duration) *AuthUseCase {
+	tokenTTLSec time.Duration) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:       userRepo,
 		hashSalt:       hashSalt,
 		signingKey:     signingKey,
-		expireDuration: time.Second * tokenTTLSeconds,
+		expireDuration: time.Second * tokenTTLSec,
 	}
 }
 
@@ -78,8 +78,8 @@ func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, 
 func (a *AuthUseCase) ParseToken(ctx context.Context, l logger.Interface, accessToken string) (*entity.User, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			l.Info("Unexpected signing method")
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			l.Info("unexpected signing method")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return a.signingKey, nil
 	})

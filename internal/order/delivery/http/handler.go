@@ -56,7 +56,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	}
 
 	resLuhn := luhn.Valid(conv)
-	if resLuhn == false {
+	if !resLuhn {
 		h.l.Error("error in algorithm Luhn")
 		c.AbortWithStatus(http.StatusUnprocessableEntity)
 		return

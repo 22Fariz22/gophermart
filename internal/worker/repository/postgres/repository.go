@@ -7,7 +7,6 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"io"
 	"net/http"
@@ -111,7 +110,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 		// if status == 204: do update set order_status = INVALID, history_status = INVALID
 		if r.StatusCode == 204 {
 			// do update in data in tables orders and history
-			if err := checkStatus(w, ResAccrualSystem{
+			if err := checkStatus(w, l, ResAccrualSystem{
 				Order:   v.Number,
 				Status:  "INVALID",
 				Accrual: 0,
@@ -129,7 +128,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 			}
 
 			//do update
-			checkStatus(w, resAccrSys)
+			checkStatus(w, l, resAccrSys)
 		}
 
 		if r.StatusCode == 429 {
@@ -149,22 +148,22 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 	return nil, nil
 }
 
-func checkStatus(w *WorkerRepository, resAcc ResAccrualSystem) error {
-	err := updateWithStatus(w, resAcc)
+func checkStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+	err := updateWithStatus(w, l, resAcc)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func updateWithStatus(w *WorkerRepository, resAcc ResAccrualSystem) error {
+func updateWithStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
 	ctx := context.Background()
 
 	//UPDATE в таблице History и Orders
 	_, err := w.Pool.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
 							where number = $3`, resAcc.Status, resAcc.Accrual, resAcc.Order)
 	if err != nil {
-		log.Printf("error in Exec UPDATE: ", err)
+		l.Error("error in Exec UPDATE: ", err)
 		return err
 	}
 
@@ -192,7 +191,7 @@ func mockResponse(l logger.Interface, orders []*entity.Order) ([]*entity.History
 	return arrRA, nil
 }
 
-func (w *WorkerRepository) SendToWaitListChannels() {
-	//TODO implement me
-	panic("implement me")
-}
+//func (w *WorkerRepository) SendToWaitListChannels() {
+//	//TODO implement me
+//	panic("implement me")
+//}

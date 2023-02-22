@@ -95,7 +95,7 @@ func (a *App) Run() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	//go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
+	go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {

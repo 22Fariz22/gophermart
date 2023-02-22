@@ -28,10 +28,10 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 	return &OrderRepository{db}
 }
 
-type existOrder struct {
-	uID    int    `json:"user_id"`
-	number string `json:"number"`
-}
+//type existOrder struct {
+//	uID    int    `json:"user_id"`
+//	number string `json:"number"`
+//}
 
 func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
 	var existUser int
