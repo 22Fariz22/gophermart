@@ -7,12 +7,12 @@ import (
 )
 
 func main() {
-	_, err := config.NewConfig()
+	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatalf("%s", err.Error())
 	}
 
-	app := app.NewApp()
+	app := app.NewApp(cfg)
 
 	app.Run()
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/22Fariz22/gophermart/internal/config"
 	"log"
 	"net/http"
 	"os"
@@ -38,10 +39,12 @@ type App struct {
 	workerUC   worker.UseCase
 }
 
-func NewApp() *App {
+func NewApp(cfg *config.Config) *App {
 	log.Println("viper.GetString('a'): ", viper.GetString("a"))
 	log.Println("viper.GetString('d'): ", viper.GetString("d"))
 	log.Println("viper.GetString('r'): ", viper.GetString("r"))
+
+	log.Println("cfg : ", cfg)
 
 	// Repository
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
