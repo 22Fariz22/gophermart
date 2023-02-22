@@ -88,7 +88,7 @@ func (a *App) Run() error {
 
 	// HTTP Server
 	a.httpServer = &http.Server{
-		Addr:           viper.GetString("d"), //":" + "8080", //8080
+		Addr:           viper.GetString("a"), //":" + "8080", //8080
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
