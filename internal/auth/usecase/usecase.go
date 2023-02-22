@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"crypto/sha1"
 	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/internal/entity"
@@ -37,25 +38,24 @@ func NewAuthUseCase(
 }
 
 func (a *AuthUseCase) SignUp(ctx context.Context, l logger.Interface, username, password string) error {
-	//pwd := sha1.New()
+	pwd := sha1.New()
 	fmt.Println("uc-signUp()-username-passwors", username, password)
-	//pwd.Write([]byte(password))
-	//pwd.Write([]byte(a.hashSalt))
+	pwd.Write([]byte(password))
+	pwd.Write([]byte(a.hashSalt))
 
 	user := &entity.User{
-		Login: username,
-		//Password: fmt.Sprintf("%x", pwd.Sum(nil)),
-		Password: password,
+		Login:    username,
+		Password: fmt.Sprintf("%x", pwd.Sum(nil)),
 	}
 
 	return a.userRepo.CreateUser(ctx, l, user)
 }
 
 func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, password string) (string, error) {
-	//pwd := sha1.New()
-	//pwd.Write([]byte(password))
-	//pwd.Write([]byte(a.hashSalt))
-	//password = fmt.Sprintf("%x", pwd.Sum(nil))
+	pwd := sha1.New()
+	pwd.Write([]byte(password))
+	pwd.Write([]byte(a.hashSalt))
+	password = fmt.Sprintf("%x", pwd.Sum(nil))
 
 	user, err := a.userRepo.GetUser(ctx, l, username, password)
 	fmt.Println("auth-uc-user: ", err)

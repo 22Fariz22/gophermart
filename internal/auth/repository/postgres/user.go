@@ -50,7 +50,7 @@ func (u *UserRepository) CreateUser(ctx context.Context, l logger.Interface, use
 	log.Println("auth-db-CreateUser()-user.Login, user.Password: ", user.Login, user.Password)
 	_, err := u.Pool.Exec(ctx, "INSERT INTO users(login, password) values($1, $2);", user.Login, user.Password)
 	if err != nil {
-		l.Error("error in pool.Exec - INSERT.")
+		l.Error("error in pool.Exec - INSERT:", err)
 		return err
 	}
 
