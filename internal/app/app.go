@@ -88,7 +88,7 @@ func (a *App) Run() error {
 
 	// HTTP Server
 	a.httpServer = &http.Server{
-		Addr:           ":" + "8088",
+		Addr:           ":" + "8080",
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
