@@ -15,11 +15,11 @@ import (
 )
 
 type Order struct {
-	ID         string    `json:"id"`
-	Number     string    `json:"number"`
-	Status     string    `json:"status"`
-	Accrual    uint32    `json:"accrual"`
-	UploadedAt time.Time `json:"uploaded_at"`
+	//ID         string    `json:"id"`
+	Number     string `json:"number"`
+	Status     string `json:"status"`
+	Accrual    uint32 `json:"accrual,omitempty"`
+	UploadedAt string `json:"uploaded_at"`
 }
 
 type Handler struct {
@@ -102,7 +102,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, orders)
+	c.JSON(http.StatusOK, toOrders(orders))
 }
 
 func toOrders(os []*entity.Order) []*Order {
@@ -116,10 +116,13 @@ func toOrders(os []*entity.Order) []*Order {
 }
 
 func toOrder(o *entity.Order) *Order {
+
+	strTime := o.UploadedAt.Format(time.RFC3339)
 	return &Order{
-		ID:         o.ID,
+		//ID:         o.ID,
 		Number:     o.Number,
 		Status:     o.Status,
-		UploadedAt: time.Time{},
+		Accrual:    o.Accrual,
+		UploadedAt: strTime,
 	}
 }
