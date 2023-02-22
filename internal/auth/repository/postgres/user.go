@@ -7,6 +7,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"log"
 )
 
 type User struct {
@@ -46,6 +47,7 @@ func (u *UserRepository) CreateUser(ctx context.Context, l logger.Interface, use
 	}
 
 	// вставляем новый логин и пароль
+	log.Println("auth-db-CreateUser()-user.Login, user.Password: ", user.Login, user.Password)
 	_, err := u.Pool.Exec(ctx, "INSERT INTO users(login, password) values($1, $2);", user.Login, user.Password)
 	if err != nil {
 		l.Error("error in pool.Exec - INSERT.")
