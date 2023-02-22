@@ -12,7 +12,7 @@ type Config struct {
 	accrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 }
 
-func NewConfig() (*Config, error) {
+func NewConfig() *Config {
 	cfg := &Config{}
 
 	flag.StringVar(&cfg.runAddress, "a", "localhost:8080", "server address")
@@ -23,5 +23,5 @@ func NewConfig() (*Config, error) {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	return cfg, nil
+	return cfg
 }
