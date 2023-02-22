@@ -7,7 +7,6 @@ import (
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"strconv"
 	"time"
 )
@@ -30,23 +29,16 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 }
 
 type existOrder struct {
-	uID    string `db:"user_id"`
-	number string `db:"number"`
+	uID    int    `json:"user_id"`
+	number string `json:"number"`
 }
 
 func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
 	var existUser int
-	var eOrd existOrder
 
 	fmt.Println("order-PushOrder()-number:", eo.Number)
 	// поменять на другой запрос
 	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existUser)
-
-	if err := pgxscan.Get(ctx, o.Pool, &eOrd, `SELECT user_id, number FROM orders where number = $1;`,
-		eo.ID, eo.Number); err != nil {
-		l.Info("err in pgxsan.Get():", err)
-	}
-	fmt.Println("eOrd: ", eOrd)
 
 	existUserConvToStr, err := strconv.Atoi(user.ID)
 	if err != nil {
@@ -59,9 +51,15 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 		l.Info("Number Has Already Been Uploaded")
 		return order.ErrNumberHasAlreadyBeenUploaded
 	}
+
 	if existUser != existUserConvToStr {
-		l.Info("Number Has Already Been Uploaded By AnotherUser")
-		return order.ErrNumberHasAlreadyBeenUploadedByAnotherUser
+		var numbExist string
+		_ = o.Pool.QueryRow(ctx, `SELECT number FROM orders where number = $1;`, eo.Number).Scan(&numbExist)
+
+		if numbExist == eo.Number {
+			l.Info("Number Has Already Been Uploaded By AnotherUser")
+			return order.ErrNumberHasAlreadyBeenUploadedByAnotherUser
+		}
 	}
 
 	tx, err := o.Pool.Begin(ctx)
@@ -73,17 +71,17 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 
 	_, err = tx.Exec(ctx, `INSERT INTO orders (user_id, number, order_status, uploaded_at)
 								VALUES ($1,$2,$3,$4)`,
-		user.ID, eo.Number, eo.Status, eo.UploadedAt)
+		eo.UserID, eo.Number, eo.Status, eo.UploadedAt)
 	if err != nil {
 		fmt.Println("db-order-PushOrder()-err(1): ", err)
 		return err
 	}
 
-	_, err = tx.Exec(ctx, `INSERT INTO history (user_id, number, order_status, uploaded_at)
-								VALUES ($1,$2,$3,$4)`,
-		user.ID, eo.Number, eo.Status, eo.UploadedAt)
+	_, err = tx.Exec(ctx, `INSERT INTO history (user_id, number,processed_at)
+								VALUES ($1,$2,$3)`,
+		eo.UserID, eo.Number, eo.UploadedAt)
 	if err != nil {
-		fmt.Println("db-order-PushOrder()-err(1): ", err)
+		fmt.Println("db-order-PushOrder()-err(2): ", err)
 		return err
 	}
 	err = tx.Commit(ctx)
@@ -107,6 +105,7 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 
 	for rows.Next() {
 		order := new(entity.Order)
+
 		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
 			l.Error("err rows.Scan(): ", err)
@@ -114,7 +113,10 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 		}
 		out = append(out, order)
 	}
-
+	if len(out) == 0 {
+		return nil, order.ErrThereIsNoOrders
+	}
+	//добавить no content?
 	return out, nil
 }
 

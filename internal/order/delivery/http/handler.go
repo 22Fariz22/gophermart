@@ -63,7 +63,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	}
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-
+	fmt.Println("order-handler-userID:", user.ID)
 	if err := h.useCase.PushOrder(c.Request.Context(), h.l, user, string(payload)); err != nil {
 		if err == order.ErrNumberHasAlreadyBeenUploaded {
 			c.AbortWithStatus(http.StatusOK)
@@ -92,14 +92,17 @@ func (h *Handler) GetOrders(c *gin.Context) {
 	orders, err := h.useCase.GetOrders(c.Request.Context(), h.l, user)
 	fmt.Println("order-handler-GetOrder()-orders: ", orders)
 	if err != nil {
+		if err == order.ErrThereIsNoOrders {
+			c.AbortWithStatus(http.StatusNoContent)
+			h.l.Error("there is no orders")
+			return
+		}
 		h.l.Error("Status Internal ServerError: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, &ordersResponse{
-		Orders: toOrders(orders),
-	})
+	c.JSON(http.StatusOK, orders)
 }
 
 func toOrders(os []*entity.Order) []*Order {
