@@ -39,13 +39,15 @@ type App struct {
 }
 
 func NewApp() *App {
+	log.Println("viper.GetString('a'): ", viper.GetString("a"))
+	log.Println("viper.GetString('d'): ", viper.GetString("d"))
+	log.Println("viper.GetString('r'): ", viper.GetString("r"))
 
 	// Repository
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
-	log.Println("viper.GetString('d'): ", viper.GetString("d"))
 
 	//defer db.Close()
 
