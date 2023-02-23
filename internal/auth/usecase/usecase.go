@@ -58,8 +58,8 @@ func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, 
 	password = fmt.Sprintf("%x", pwd.Sum(nil))
 
 	user, err := a.userRepo.GetUser(ctx, l, username, password)
-	fmt.Println("auth-uc-user: ", err)
 	if err != nil {
+		l.Error("SignIn - a.userRepo.GetUser:", err)
 		return "", auth.ErrUserNotFound
 	}
 
@@ -78,14 +78,14 @@ func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, 
 func (a *AuthUseCase) ParseToken(ctx context.Context, l logger.Interface, accessToken string) (*entity.User, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			l.Info("unexpected signing method")
+			l.Error("unexpected signing method: %v", token.Header["alg"])
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return a.signingKey, nil
 	})
 
 	if err != nil {
-		l.Info("err in jwt.ParseWithClaims()")
+		l.Info("err in jwt.ParseWithClaims(): ", err)
 		return nil, err
 	}
 
