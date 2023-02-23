@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -25,8 +24,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		fmt.Println(" authHeader == ''.Status Unauthorized.")
-		m.l.Info("Status Unauthorized")
+		m.l.Info("authHeader == ''.Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
