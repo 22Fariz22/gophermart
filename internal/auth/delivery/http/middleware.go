@@ -23,11 +23,11 @@ func NewAuthMiddleware(usecase auth.UseCase, l logger.Interface) gin.HandlerFunc
 func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
-	//if authHeader == "" {
-	//	m.l.Info("authHeader == ''.Status Unauthorized.")
-	//	c.AbortWithStatus(http.StatusUnauthorized)
-	//	return
-	//}
+	if authHeader == "" {
+		m.l.Info("authHeader == ''.Status Unauthorized.")
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
 	headerParts := strings.Split(authHeader, " ")
 	if len(headerParts) != 2 {
