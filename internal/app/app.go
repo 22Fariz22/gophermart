@@ -66,7 +66,7 @@ func NewApp(cfg *config.Config) *App {
 			userRepo,
 			"hash_salt",
 			[]byte("signing_key"),
-			time.Duration(8640000),
+			time.Duration(86400),
 		),
 		orderUC:   usecase2.NewOrderUseCase(orderRepo),
 		historyUC: usecase3.NewHistoryUseCase(historyRepo),

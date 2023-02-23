@@ -59,7 +59,7 @@ func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, 
 
 	user, err := a.userRepo.GetUser(ctx, l, username, password)
 	if err != nil {
-		l.Error("SignIn - a.userRepo.GetUser:", err)
+		l.Error("SignIn - a.userRepo.GetUser()-ErrUserNotFound:", err)
 		return "", auth.ErrUserNotFound
 	}
 
