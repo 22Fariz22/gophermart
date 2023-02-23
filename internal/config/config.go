@@ -13,7 +13,7 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	cfg := &Config{}
+	cfg := Config{}
 
 	flag.StringVar(&cfg.RunAddress, "a", "localhost:8080", "server address")
 	flag.StringVar(&cfg.DatabaseURI, "d", "", "database address")
@@ -25,5 +25,5 @@ func NewConfig() *Config {
 		fmt.Printf("%+v\n", err)
 	}
 
-	return cfg
+	return &cfg
 }
