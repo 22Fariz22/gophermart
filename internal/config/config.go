@@ -2,12 +2,12 @@ package config
 
 import (
 	"flag"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"fmt"
+	"github.com/caarlos0/env/v7"
 )
 
 type Config struct {
-	RunAddress           string `env:"RUN_ADDRESS"` //envDefault:":8080"
+	RunAddress           string `env:"RUN_ADDRESS"`
 	DatabaseURI          string `env:"DATABASE_URI"`
 	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 }
@@ -16,12 +16,14 @@ func NewConfig() *Config {
 	cfg := &Config{}
 
 	flag.StringVar(&cfg.RunAddress, "a", "localhost:8080", "server address")
-	flag.StringVar(&cfg.DatabaseURI, "d", "", "database address")        //postgres://postgres:55555@127.0.0.1:5432/gophermart
-	flag.StringVar(&cfg.AccrualSystemAddress, "r", "", "accrual system") // http://127.0.0.1:8080
+	flag.StringVar(&cfg.DatabaseURI, "d", "", "database address")
+	flag.StringVar(&cfg.AccrualSystemAddress, "r", "", "accural system")
 
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
+	flag.Parse()
+
+	if err := env.Parse(&cfg); err != nil {
+		fmt.Printf("%+v\n", err)
+	}
 
 	return cfg
 }

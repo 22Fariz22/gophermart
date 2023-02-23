@@ -32,6 +32,7 @@ import (
 )
 
 type App struct {
+	cfg        *config.Config
 	httpServer *http.Server
 	authUC     auth.UseCase
 	orderUC    order.UseCase
@@ -41,11 +42,11 @@ type App struct {
 
 func NewApp(cfg *config.Config) *App {
 
-	log.Println("viper.GetString('a'): ", viper.GetString("a"))
-	log.Println("viper.GetString('d'): ", viper.GetString("d"))
-	log.Println("viper.GetString('r'): ", viper.GetString("r"))
-
-	log.Println("cfg DatabaseURI: ", cfg.DatabaseURI)
+	//log.Println("viper.GetString('a'): ", viper.GetString("a"))
+	//log.Println("viper.GetString('d'): ", viper.GetString("d"))
+	//log.Println("viper.GetString('r'): ", viper.GetString("r"))
+	//
+	//log.Println("cfg DatabaseURI: ", cfg.DatabaseURI)
 
 	// Repository
 	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
@@ -61,6 +62,7 @@ func NewApp(cfg *config.Config) *App {
 	workerRepo := postgres5.NewWorkerRepository(db)
 
 	return &App{
+		cfg: cfg,
 		authUC: usecase.NewAuthUseCase(
 			userRepo,
 			"hash_salt",
@@ -96,7 +98,7 @@ func (a *App) Run() error {
 
 	// HTTP Server
 	a.httpServer = &http.Server{
-		Addr:           viper.GetString("a"), //":" + "8088", //8080
+		Addr:           a.cfg.RunAddress, //":" + "8088", //8080
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
