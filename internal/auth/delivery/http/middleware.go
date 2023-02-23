@@ -25,7 +25,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		fmt.Println("Status Unauthorized.")
+		fmt.Println(" authHeader == ''.Status Unauthorized.")
 		m.l.Info("Status Unauthorized")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
@@ -33,24 +33,22 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 
 	headerParts := strings.Split(authHeader, " ")
 	if len(headerParts) != 2 {
-		fmt.Println("Status Unauthorized.")
-		m.l.Info("Status Unauthorized.")
+		m.l.Info("len(headerParts) != 2.Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if headerParts[0] != "Bearer" {
-		fmt.Println("Not bearer.Status Unauthorized.")
-		m.l.Info("Not bearer.Status Unauthorized.")
+		m.l.Info("headerParts[0] != 'Bearer'.Not bearer.Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, headerParts[1])
 	if err != nil {
-		status := http.StatusUnauthorized
+		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
-			m.l.Info("Invalid Access Token.")
+			m.l.Info("err == auth.ErrInvalidAccessToken.Invalid Access Token.")
 			status = http.StatusUnauthorized
 		}
 		m.l.Info("Status Internal Server Error")
