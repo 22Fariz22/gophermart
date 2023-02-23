@@ -28,7 +28,6 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 type App struct {
@@ -49,7 +48,7 @@ func NewApp(cfg *config.Config) *App {
 	//log.Println("cfg DatabaseURI: ", cfg.DatabaseURI)
 
 	// Repository
-	db, err := postgres.New(viper.GetString("d"), postgres.MaxPoolSize(2))
+	db, err := postgres.New(cfg.DatabaseURI, postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
