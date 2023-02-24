@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,6 @@ type Handler struct {
 }
 
 func NewHandler(useCase auth.UseCase, l logger.Interface) *Handler {
-	fmt.Println("auth-NewHandler")
 	return &Handler{
 		useCase: useCase,
 		l:       l,
@@ -28,6 +26,7 @@ type signInput struct {
 }
 
 func (h *Handler) SignUp(c *gin.Context) {
+	log.Println("auth-handler-sugnUp().")
 	inp := new(signInput)
 
 	if err := c.BindJSON(inp); err != nil {
@@ -68,6 +67,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 }
 
 func (h *Handler) SignIn(c *gin.Context) {
+	log.Println("auth-handler-sugnIn().")
 	inp := new(signInput)
 
 	if err := c.BindJSON(inp); err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/dgrijalva/jwt-go/v4"
+	"log"
 
 	"time"
 )
@@ -38,6 +39,7 @@ func NewAuthUseCase(
 }
 
 func (a *AuthUseCase) SignUp(ctx context.Context, l logger.Interface, username, password string) error {
+	log.Println("auth-uc-SignUp()")
 	pwd := sha1.New()
 	fmt.Println("uc-signUp()-username-passwors", username, password)
 	pwd.Write([]byte(password))
@@ -52,6 +54,7 @@ func (a *AuthUseCase) SignUp(ctx context.Context, l logger.Interface, username, 
 }
 
 func (a *AuthUseCase) SignIn(ctx context.Context, l logger.Interface, username, password string) (string, error) {
+	log.Println("auth-uc-SignIn()")
 	pwd := sha1.New()
 	pwd.Write([]byte(password))
 	pwd.Write([]byte(a.hashSalt))
