@@ -108,8 +108,10 @@ func (h *Handler) GetOrders(c *gin.Context) {
 }
 
 func toOrders(os []*entity.Order) []*Order {
-	out := make([]*Order, len(os))
+	log.Println("order-handler-toOrders().")
 
+	out := make([]*Order, len(os))
+	log.Println("before order-handler-toOrders()- for...range os.")
 	for i, o := range os {
 		out[i] = toOrder(o)
 	}
@@ -118,6 +120,7 @@ func toOrders(os []*entity.Order) []*Order {
 }
 
 func toOrder(o *entity.Order) *Order {
+	log.Println("order-handler-toOrder().")
 
 	strTime := o.UploadedAt.Format(time.RFC3339)
 	return &Order{

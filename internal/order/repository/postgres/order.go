@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
@@ -49,7 +48,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 		return err
 	}
 
-	fmt.Println(" existUser == existUserConvToStr", existUser, existUserConvToStr)
+	log.Println(" existUser == existUserConvToStr", existUser, existUserConvToStr)
 	if existUser == existUserConvToStr {
 		l.Info("Number Has Already Been Uploaded")
 		return order.ErrNumberHasAlreadyBeenUploaded
@@ -76,7 +75,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 								VALUES ($1,$2,$3,$4)`,
 		eo.UserID, eo.Number, eo.Status, eo.UploadedAt)
 	if err != nil {
-		fmt.Println("db-order-PushOrder()-err(1): ", err)
+		l.Error("order-repo-PushOrder()-err(1): ", err)
 		return err
 	}
 
@@ -84,7 +83,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 								VALUES ($1,$2,$3)`,
 		eo.UserID, eo.Number, eo.UploadedAt)
 	if err != nil {
-		fmt.Println("db-order-PushOrder()-err(2): ", err)
+		l.Error("order-repo-PushOrder()-err(2): ", err)
 		return err
 	}
 	err = tx.Commit(ctx)
@@ -102,7 +101,7 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)
 	if err != nil {
-		l.Error("err Pool.Query: ", err)
+		l.Error("order-repo-GetOrders()-Pool.Query()-err: ", err)
 		return nil, err
 	}
 
@@ -113,15 +112,17 @@ func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user
 
 		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
-			l.Error("err rows.Scan(): ", err)
+			l.Error("order-repo-GetOrders()-rows.Scan()-err: ", err)
 			return nil, err
 		}
 		out = append(out, order)
 	}
+
 	if len(out) == 0 {
+		l.Info("order-repo-GetOrders()-len(out)==0")
 		return nil, order.ErrThereIsNoOrders
 	}
-	//добавить no content?
+
 	return out, nil
 }
 

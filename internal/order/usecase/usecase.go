@@ -35,6 +35,7 @@ func (o *OrderUseCase) GetOrders(ctx context.Context, l logger.Interface, user *
 	log.Println("order-uc-GetOrder().")
 	orders, err := o.orderRepo.GetOrders(ctx, l, user)
 	if err != nil {
+		log.Println("order-uc-GetOrders() -err: ", err)
 		return nil, err
 	}
 	return orders, nil
