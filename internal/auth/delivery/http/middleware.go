@@ -47,8 +47,9 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	//	return
 	//}
 
-	splitToken := strings.Split(authHeader, "Bearer")
+	splitToken := strings.Split(authHeader, "Bearer ")
 	authHeader = splitToken[1]
+	log.Println("middlw-authHeader after split:", authHeader)
 
 	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, authHeader) //headerParts[1]
 	if err != nil {
