@@ -52,12 +52,20 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
+	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
+	log.Println("token from auth-handler-h.useCase.SignIn: ", token)
+	if err != nil {
+		if err == auth.ErrUserNotFound {
+			h.l.Info("User Not Found.")
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+	}
+
+	c.Header("Authorization", token)
+
 	c.Status(http.StatusOK)
 }
-
-//type signInResponse struct {
-//	Token string `json:"token"`
-//}
 
 func (h *Handler) SignIn(c *gin.Context) {
 	inp := new(signInput)
