@@ -9,6 +9,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/spf13/viper"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -24,7 +25,7 @@ func NewWorkerRepository(db *postgres.Postgres) *WorkerRepository {
 }
 
 func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, error) {
-	fmt.Println("in repo-CheckNewOrders()")
+	log.Println("worker-repo-CheckNewOrders()")
 
 	ctx := context.Background()
 	rows, err := w.Pool.Query(ctx, `SELECT number FROM orders
@@ -64,7 +65,7 @@ type ResAccrualSystem struct {
 
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
 func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
-	fmt.Println("in repo-SendToAccrualBox()")
+	log.Println("worker-repo-SendToAccrualBox()")
 	//var arrResAcc arrRespAccr
 
 	//структура json ответа от accrual sysytem
@@ -74,9 +75,9 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 	accrualSystemAddress := viper.GetString("r")
 
 	//возвращаем мок, если запускаем приложение у себя локально
-	if accrualSystemAddress == "mock" {
-		return mockResponse(l, orders)
-	}
+	//if accrualSystemAddress == "mock" {
+	//	return mockResponse(l, orders)
+	//}
 
 	reqURL, err := url.Parse(accrualSystemAddress)
 	fmt.Println("url.Parse")
@@ -149,6 +150,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 }
 
 func checkStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+	log.Println("worker-repo-checkStatus()")
 	err := updateWithStatus(w, l, resAcc)
 	if err != nil {
 		return err
@@ -157,6 +159,8 @@ func checkStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSyste
 }
 
 func updateWithStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+	log.Println("worker-repo-updateWithStatus()")
+
 	ctx := context.Background()
 
 	//UPDATE в таблице History и Orders

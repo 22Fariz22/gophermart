@@ -7,6 +7,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
+	"log"
 	"strconv"
 	"time"
 )
@@ -34,9 +35,11 @@ func NewOrderRepository(db *postgres.Postgres) *OrderRepository {
 //}
 
 func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, eo *entity.Order) error {
+	log.Println("order-repo-PushOrder().")
+
 	var existUser int
 
-	fmt.Println("order-PushOrder()-number:", eo.Number)
+	log.Println("order-PushOrder()-number:", eo.Number)
 	// поменять на другой запрос
 	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existUser)
 
@@ -94,6 +97,8 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 }
 
 func (o OrderRepository) GetOrders(ctx context.Context, l logger.Interface, user *entity.User) ([]*entity.Order, error) {
+	log.Println("order-repo-GetOrder().")
+
 	rows, err := o.Pool.Query(ctx, `SELECT order_id, number, order_status, accrual, uploaded_at FROM orders
 									WHERE user_id = $1`, user.ID)
 	if err != nil {

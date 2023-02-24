@@ -6,6 +6,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/order"
 	"github.com/22Fariz22/gophermart/pkg/logger"
+	"log"
 	"time"
 )
 
@@ -18,6 +19,7 @@ func NewOrderUseCase(orderRepo order.OrderRepository) *OrderUseCase {
 }
 
 func (o *OrderUseCase) PushOrder(ctx context.Context, l logger.Interface, user *entity.User, number string) error {
+	log.Println("order-uc-PushOrder().")
 	eo := &entity.Order{ // можно ли убрать это или перенести это действие в репо?
 		//ID:         "",
 		UserID:     user.ID,
@@ -30,6 +32,7 @@ func (o *OrderUseCase) PushOrder(ctx context.Context, l logger.Interface, user *
 }
 
 func (o *OrderUseCase) GetOrders(ctx context.Context, l logger.Interface, user *entity.User) ([]*entity.Order, error) {
+	log.Println("order-uc-GetOrder().")
 	orders, err := o.orderRepo.GetOrders(ctx, l, user)
 	if err != nil {
 		return nil, err

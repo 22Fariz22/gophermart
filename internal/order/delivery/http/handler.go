@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/theplant/luhn"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -39,6 +40,7 @@ type Number struct {
 }
 
 func (h *Handler) PushOrder(c *gin.Context) {
+	log.Println("order-handler-PushOrder().")
 	payload, err := io.ReadAll(c.Request.Body)
 
 	if err != nil {
@@ -63,7 +65,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 	}
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
-	fmt.Println("order-handler-userID:", user.ID)
+	log.Println("order-handler-userID:", user.ID)
 	if err := h.useCase.PushOrder(c.Request.Context(), h.l, user, string(payload)); err != nil {
 		if err == order.ErrNumberHasAlreadyBeenUploaded {
 			c.AbortWithStatus(http.StatusOK)
@@ -85,7 +87,7 @@ type ordersResponse struct {
 }
 
 func (h *Handler) GetOrders(c *gin.Context) {
-	fmt.Println("order-handler-GetOrder()")
+	log.Println("order-handler-GetOrder()")
 
 	user := c.MustGet(auth.CtxUserKey).(*entity.User)
 
