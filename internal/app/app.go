@@ -103,7 +103,7 @@ func (a *App) Run() error {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Println("app-a.httpServer:,", a.httpServer)
+	log.Println("app-a.httpServer:,", a.httpServer)
 
 	go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
 
@@ -112,6 +112,9 @@ func (a *App) Run() error {
 			l.Fatal("Failed to listen and serve: %+v", err)
 		}
 	}()
+	//if err := http.ListenAndServe(a.cfg.RunAddress, router); err != http.ErrServerClosed {
+	//	log.Fatalf("HTTP server ListenAndServe Error: %v", err)
+	//}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Interrupt)

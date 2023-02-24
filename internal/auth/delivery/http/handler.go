@@ -54,9 +54,9 @@ func (h *Handler) SignUp(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-type signInResponse struct {
-	Token string `json:"token"`
-}
+//type signInResponse struct {
+//	Token string `json:"token"`
+//}
 
 func (h *Handler) SignIn(c *gin.Context) {
 	inp := new(signInput)
@@ -76,5 +76,6 @@ func (h *Handler) SignIn(c *gin.Context) {
 		}
 	}
 
-	c.Header("Authorization", token)
+	//c.Header("Authorization", token)
+	c.Header("Cookie", token)
 }
