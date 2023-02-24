@@ -38,13 +38,13 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 
 	var existUser int
 
-	log.Println("order-PushOrder()-number:", eo.Number)
-	// поменять на другой запрос
+	log.Println("order-repo-PushOrder()-number:", eo.Number)
+
 	_ = o.Pool.QueryRow(ctx, `SELECT user_id FROM orders where number = $1;`, eo.Number).Scan(&existUser)
 
 	existUserConvToStr, err := strconv.Atoi(user.ID)
 	if err != nil {
-		l.Error("err in strconv.Atoi(user.ID)")
+		l.Error("err in strconv.Atoi(user.ID):", err)
 		return err
 	}
 
@@ -64,6 +64,7 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 		}
 	}
 
+	log.Println("order-repo-PushOrder()- start begin tx.")
 	tx, err := o.Pool.Begin(ctx)
 	if err != nil {
 		l.Error("tx err: ", err)
@@ -86,6 +87,8 @@ func (o *OrderRepository) PushOrder(ctx context.Context, l logger.Interface, use
 		l.Error("order-repo-PushOrder()-err(2): ", err)
 		return err
 	}
+
+	log.Println("order-repo-PushOrder().-tx commit.")
 	err = tx.Commit(ctx)
 	if err != nil {
 		l.Error("commit err: ", err)
