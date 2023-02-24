@@ -86,6 +86,5 @@ func (h *Handler) SignIn(c *gin.Context) {
 		}
 	}
 
-	c.Header("Authorization", token)
-	//c.Header("Cookie", token)
+	//c.Header("Authorization", token)
 }
