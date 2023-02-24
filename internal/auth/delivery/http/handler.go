@@ -52,7 +52,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 	}
 
 	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
-	log.Println("token from auth-handler-h.useCase.SignIn: ", token)
+	log.Println("token from auth-handler-h.useCase.SignUp auto SignIn: ", token)
 	if err != nil {
 		if err == auth.ErrUserNotFound {
 			h.l.Info("User Not Found.")

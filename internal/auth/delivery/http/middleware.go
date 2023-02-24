@@ -34,20 +34,23 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 		return
 	}
 
-	headerParts := strings.Split(authHeader, " ")
-	if len(headerParts) != 2 {
-		m.l.Info("len(headerParts) != 2.Status Unauthorized.")
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	//headerParts := strings.Split(authHeader, " ")
+	//if len(headerParts) != 2 {
+	//	m.l.Info("len(headerParts) != 2.Status Unauthorized.")
+	//	c.AbortWithStatus(http.StatusUnauthorized)
+	//	return
+	//}
+	//
+	//if headerParts[0] != "Bearer" {
+	//	m.l.Info("headerParts[0] != 'Bearer'.Not bearer.Status Unauthorized.")
+	//	c.AbortWithStatus(http.StatusUnauthorized)
+	//	return
+	//}
 
-	if headerParts[0] != "Bearer" {
-		m.l.Info("headerParts[0] != 'Bearer'.Not bearer.Status Unauthorized.")
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	splitToken := strings.Split(authHeader, "Bearer ")
+	authHeader = splitToken[1]
 
-	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, headerParts[1])
+	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, authHeader) //headerParts[1]
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
