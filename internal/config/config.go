@@ -18,7 +18,7 @@ type Config struct {
 func NewConfig() *Config {
 	cfg := Config{}
 
-	flag.StringVar(&cfg.RunAddress, "a", "localhost:8080", "server address")
+	flag.StringVar(&cfg.RunAddress, "a", "", "server address") //localhost:8080
 	flag.StringVar(&cfg.DatabaseURI, "d", "", "database address")
 	flag.StringVar(&cfg.AccrualSystemAddress, "r", "", "accural system")
 
