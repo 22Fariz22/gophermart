@@ -35,6 +35,9 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	}
 
 	headerParts := strings.Split(authHeader, " ")
+
+	log.Println("middleware len(c.GetHeader('Authorization')) after split ' ':", len(headerParts))
+
 	if len(headerParts) != 2 {
 		m.l.Info("len(headerParts) != 2.Status Unauthorized.")
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -51,7 +54,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	//authHeader = strings.TrimSpace(splitToken[1])
 	//log.Println("middlw-authHeader after split:", authHeader)
 
-	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, authHeader) //headerParts[1]
+	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, headerParts[1])
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
