@@ -5,6 +5,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 )
 
@@ -68,6 +69,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 	}
 
 	token, err := h.useCase.SignIn(c.Request.Context(), h.l, inp.Login, inp.Password)
+	log.Println("token from auth-handler-h.useCase.SignIn: ", token)
 	if err != nil {
 		if err == auth.ErrUserNotFound {
 			h.l.Info("User Not Found.")
