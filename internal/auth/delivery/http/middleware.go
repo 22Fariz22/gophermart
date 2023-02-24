@@ -4,6 +4,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/auth"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -22,6 +23,10 @@ func NewAuthMiddleware(usecase auth.UseCase, l logger.Interface) gin.HandlerFunc
 
 func (m *AuthMiddleware) Handle(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
+	//cookieHeader := c.GetHeader("Cookie")
+
+	log.Println("middleware c.GetHeader('Authorization'):", authHeader)
+	//log.Println("middleware c.GetHeader('Cookie'):", cookieHeader)
 
 	if authHeader == "" {
 		m.l.Info("authHeader == ''.Status Unauthorized.")
