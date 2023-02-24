@@ -37,6 +37,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	headerParts := strings.Split(authHeader, " ")
 
 	log.Println("middleware len(c.GetHeader('Authorization')) after split ' ':", len(headerParts))
+	log.Println("middleware len(c.GetHeader('Authorization'))  headerParts[0] ' ':", headerParts[0])
 
 	if len(headerParts) != 2 {
 		m.l.Info("len(headerParts) != 2.Status Unauthorized.")
