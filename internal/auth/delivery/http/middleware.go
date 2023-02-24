@@ -48,7 +48,7 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	//}
 
 	splitToken := strings.Split(authHeader, "Bearer")
-	authHeader = strings.TrimSpace(splitToken[1])
+	authHeader = splitToken[1]
 
 	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, authHeader) //headerParts[1]
 	if err != nil {
