@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -88,7 +89,9 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 
 	// проходимся по списку ордеров и обращаемся к accrual system
 	for _, v := range orders {
-		u_id, err := strconv.Atoi(v.UserID)
+		log.Println("worker-repo-SendToAccrualBox()-v.UserID: ", v.UserID)
+		log.Println("worker-repo-SendToAccrualBox()-refl(v.UserID): ", reflect.TypeOf(v.UserID))
+		uId, err := strconv.Atoi(v.UserID)
 		if err != nil {
 			l.Error("worker-repo-SendToAccrualBox()-atoi: ", err)
 			return nil, err
@@ -121,7 +124,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 				Order:   v.Number,
 				Status:  "INVALID",
 				Accrual: 0,
-			}, u_id); err != nil {
+			}, uId); err != nil {
 				return nil, err // определить какой error
 			}
 		}
@@ -135,7 +138,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 			}
 
 			//do update
-			update(w, l, resAccrSys, u_id)
+			update(w, l, resAccrSys, uId)
 		}
 
 		if r.StatusCode == 429 {
@@ -156,7 +159,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 	return nil, nil
 }
 
-func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, u_id int) error {
+func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uId int) error {
 	log.Println("worker-repo-updateWithStatus()")
 	log.Println("worker-repo-updateWithStatus()-resAcc: ", resAcc)
 
@@ -181,7 +184,7 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, u_
 
 	// добовляем в таблицу user
 	_, err = tx.Exec(ctx, `UPDATE user SET balance_total =  $1
-							where user_id = $2`, int(resAcc.Accrual*100), u_id)
+							where user_id = $2`, int(resAcc.Accrual*100), uId)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
 		return err
