@@ -56,7 +56,7 @@ func (h *Handler) PushOrder(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
+	log.Println("order-handler-PushOrder()-conv:", conv)
 	resLuhn := luhn.Valid(conv)
 	if !resLuhn {
 		h.l.Error("error in algorithm Luhn")

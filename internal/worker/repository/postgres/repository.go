@@ -191,15 +191,12 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uI
 		return err
 	}
 
-	// надо ли делать UPDATE в history???
-
-	log.Println("worker-repo-updateWithStatus().-tx commit.")
-
 	err = tx.Commit(ctx)
 	if err != nil {
 		l.Error("worker-repo-updateWithStatus() -tx.commit err: ", err)
 		return err
 	}
+	log.Println("worker-repo-updateWithStatus().-end tx commit.")
 
 	return nil
 }
