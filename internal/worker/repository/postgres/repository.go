@@ -181,7 +181,7 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uI
 	}
 
 	// добовляем в таблицу user
-	_, err = tx.Exec(ctx, `UPDATE user SET balance_total =  $1
+	_, err = tx.Exec(ctx, `UPDATE users SET balance_total =  $1
 							where user_id = $2`, int(resAcc.Accrual*100), uID)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
