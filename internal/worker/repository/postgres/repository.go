@@ -68,7 +68,7 @@ type ResAccrualSystem struct {
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
 func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Config, orders []*entity.Order) ([]*entity.History, error) {
 	log.Println("worker-repo-SendToAccrualBox()")
-	log.Println("worker-repo-SendToAccrualBox()-[]orders:", orders)
+	log.Println("worker-repo-SendToAccrualBox()-[]orders:", &orders)
 
 	//структура json ответа от accrual sysytem
 	var resAccrSys ResAccrualSystem
@@ -76,23 +76,18 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 	// считываем из env переменную ACCRUAL_SYSTEM_ADDRESS
 	accrualSystemAddress := cfg.AccrualSystemAddress
 
-	//возвращаем мок, если запускаем приложение у себя локально
-	//if accrualSystemAddress == "mock" {
-	//	return mockResponse(l, orders)
-	//}
-
 	reqURL, err := url.Parse(accrualSystemAddress)
 	fmt.Println("url.Parse")
 	if err != nil {
 		l.Error("incorrect ACCRUAL_SYSTEM_ADDRESS:", err)
-		return nil, err // выходим если адрес accrual system некорректный
+		return nil, err
 	}
 
 	// проходимся по списку ордеров и обращаемся к accrual system
 	for _, v := range orders {
-		log.Println("worker-repo-SendToAccrualBox()-v.UserID: ", v.UserID)
-		log.Println("worker-repo-SendToAccrualBox()-refl(v.UserID): ", reflect.TypeOf(v.UserID))
-		uId, err := strconv.Atoi(v.UserID)
+		log.Println("worker-repo-SendToAccrualBox()-v: ", v)
+		log.Println("worker-repo-SendToAccrualBox()-refl(v): ", reflect.TypeOf(v))
+		uID, err := strconv.Atoi(v.UserID)
 		if err != nil {
 			l.Error("worker-repo-SendToAccrualBox()-atoi: ", err)
 			return nil, err
@@ -125,7 +120,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 				Order:   v.Number,
 				Status:  "INVALID",
 				Accrual: 0,
-			}, uId); err != nil {
+			}, uID); err != nil {
 				return nil, err // определить какой error
 			}
 		}
@@ -139,7 +134,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 			}
 
 			//do update
-			update(w, l, resAccrSys, uId)
+			update(w, l, resAccrSys, uID)
 		}
 
 		if r.StatusCode == 429 {
@@ -160,7 +155,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 	return nil, nil
 }
 
-func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uId int) error {
+func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uID int) error {
 	log.Println("worker-repo-updateWithStatus()")
 	log.Println("worker-repo-updateWithStatus()-resAcc: ", resAcc)
 
@@ -185,7 +180,7 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uI
 
 	// добовляем в таблицу user
 	_, err = tx.Exec(ctx, `UPDATE user SET balance_total =  $1
-							where user_id = $2`, int(resAcc.Accrual*100), uId)
+							where user_id = $2`, int(resAcc.Accrual*100), uID)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
 		return err
