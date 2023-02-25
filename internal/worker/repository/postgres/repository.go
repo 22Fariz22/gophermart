@@ -68,6 +68,7 @@ type ResAccrualSystem struct {
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
 func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Config, orders []*entity.Order) ([]*entity.History, error) {
 	log.Println("worker-repo-SendToAccrualBox()")
+	log.Println("worker-repo-SendToAccrualBox()-[]orders:", orders)
 
 	//структура json ответа от accrual sysytem
 	var resAccrSys ResAccrualSystem

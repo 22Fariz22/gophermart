@@ -68,6 +68,7 @@ func (w *Pool) AddJob(arr []*entity.Order) error {
 	case w.mainCh <- workerData{
 		orders: arr,
 	}:
+
 		return nil
 	}
 }
