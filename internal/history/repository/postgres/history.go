@@ -120,7 +120,7 @@ func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interfa
 	user *entity.User) ([]*entity.History, error) {
 	log.Println("hist-repo-InfoWithdrawal().")
 
-	rows, err := h.Pool.Query(ctx, `SELECT number, sum, processed_at FROM history WHERE user_id = $1`,
+	rows, err := h.Pool.Query(ctx, `SELECT number, sum, processed_at FROM history WHERE user_id = $1 ORDER BY processed_at`,
 		user.ID)
 	if err != nil {
 		l.Error("hist-repo-InfoWithdrawal()- err in Query SELECT: ", err)
