@@ -92,6 +92,8 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		l.Error("tx.Prepare INSERT: ", err)
 		return err
 	}
+
+	log.Println("hist-repo-Withdraw()-before INSERT INTO history values user.ID, number, withdrawResp:", user.ID, number, withdrawResp)
 	_, err = tx.Exec(ctx, `INSERT INTO history(user_id, number, sum) VALUES($1, $2, $3)`, user.ID, number, withdrawResp)
 	if err != nil {
 		l.Error("tx.Exec INSERT: ", err)
@@ -110,10 +112,12 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 
 func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interface,
 	user *entity.User) ([]*entity.History, error) {
+	log.Println("hist-repo-InfoWithdrawal().")
+
 	rows, err := h.Pool.Query(ctx, `SELECT number, sum, processed_at FROM history WHERE user_id = $1`,
 		user.ID)
 	if err != nil {
-		l.Error("error in Query SELECT: ", err)
+		l.Error("hist-repo-InfoWithdrawal()- err in Query SELECT: ", err)
 		return nil, err
 	}
 
@@ -127,12 +131,15 @@ func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interfa
 			l.Error("error in rows.Scan(): ", err)
 			return nil, err
 		}
+		log.Println("hist-repo-InfoWithdrawal()-rows.Next()-hist: ", hist)
 		out = append(out, hist)
 	}
 
 	if len(out) == 0 {
+		log.Println("hist-repo-InfoWithdrawal()-rows.Next()-len(out) == 0")
 		return nil, history.ErrThereIsNoWithdrawal
 	}
+	log.Println("hist-repo-InfoWithdrawal()-out: ", out)
 
 	return out, nil
 }
