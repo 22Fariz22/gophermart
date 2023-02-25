@@ -30,7 +30,7 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 	log.Println("worker-repo-CheckNewOrders()")
 
 	ctx := context.Background()
-	rows, err := w.Pool.Query(ctx, `SELECT number FROM orders
+	rows, err := w.Pool.Query(ctx, `SELECT user_id,number,order_status FROM orders
 									WHERE order_status IN( 'NEW','PROCESSING')`)
 	if err != nil {
 		l.Error("err in Pool.Query()", err)
@@ -41,7 +41,7 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 
 	for rows.Next() {
 		order := new(entity.Order)
-		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
+		err := rows.Scan(&order.UserID, &order.Number, &order.Status)
 		if err != nil {
 			l.Error("err rows.Scan(): ", err)
 			return nil, err
