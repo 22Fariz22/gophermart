@@ -110,6 +110,12 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	return nil
 }
 
+type histWithdrawalResp struct {
+	Order       string  `json:"order"`
+	Sum         float64 `json:"sum"`
+	ProcessedAt string  `json:"processed_at"`
+}
+
 func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interface,
 	user *entity.User) ([]*entity.History, error) {
 	log.Println("hist-repo-InfoWithdrawal().")
@@ -132,6 +138,7 @@ func (h *HistoryRepository) InfoWithdrawal(ctx context.Context, l logger.Interfa
 			return nil, err
 		}
 		log.Println("hist-repo-InfoWithdrawal()-rows.Next()-hist: ", hist)
+
 		out = append(out, hist)
 	}
 

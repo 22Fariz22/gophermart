@@ -119,7 +119,7 @@ func toHistoryResp(h *entity.History) *HistoryResp {
 
 	return &HistoryResp{
 		Order:       h.Number,
-		Sum:         float64(h.Sum),
+		Sum:         float64(h.Sum) / 100,
 		ProcessedAt: strTime,
 	}
 }
