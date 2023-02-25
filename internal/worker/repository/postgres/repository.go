@@ -58,9 +58,9 @@ type respAccr *entity.History
 
 // структура json ответа от accrual sysytem
 type ResAccrualSystem struct {
-	Order   string `json:"order"`
-	Status  string `json:"status"`
-	Accrual int    `json:"accrual"`
+	Order   string  `json:"order"`
+	Status  string  `json:"status"`
+	Accrual float64 `json:"accrual"`
 }
 
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
@@ -105,7 +105,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 			continue //переходим к следущей итерации
 		}
 
-		fmt.Println("body: ", string(body))
+		fmt.Println("body from response accrual system:: ", string(body))
 
 		// if status == 204: do update set order_status = INVALID, history_status = INVALID
 		if r.StatusCode == 204 {
@@ -164,7 +164,7 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) er
 	defer tx.Rollback(ctx)
 
 	_, err = tx.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
-							where number = $3`, resAcc.Status, resAcc.Accrual, resAcc.Order)
+							where number = $3`, resAcc.Status, resAcc.Accrual*100, resAcc.Order)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
 		return err
