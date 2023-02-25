@@ -172,6 +172,9 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, uI
 	}
 	defer tx.Rollback(ctx)
 
+	log.Println("worker-repo-updateWithStatus()-UPDATE  resAcc: ", resAcc)
+	log.Println("worker-repo-updateWithStatus()-UPDATE  int(resAcc.Accrual*100): ", int(resAcc.Accrual*100))
+
 	// добавлякем в таблицу orders
 	_, err = tx.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
 							where number = $3`, resAcc.Status, int(resAcc.Accrual*100), resAcc.Order)
