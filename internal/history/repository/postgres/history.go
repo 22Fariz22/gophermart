@@ -9,6 +9,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"log"
+	"reflect"
 )
 
 type HistoryRepository struct {
@@ -49,14 +50,14 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 	withdrawTotal := 0
 
 	// узнаем сколько всего баллов
-	err := pgxscan.Get(ctx, h.Pool, &withdrawTotal, `SELECT withdraw_total FROM users WHERE user_id = $1`, user.ID)
+	err := pgxscan.Get(ctx, h.Pool, &withdrawTotal, `SELECT balance_total FROM users WHERE user_id = $1`, user.ID)
 
 	if err != nil {
 		l.Error("history-repo-Get()-err: ", err)
 		return err
 	}
-	log.Println("hist-repo-Withdraw()-withdrawTotal: ", withdrawTotal)
-	log.Println("hist-repo-Withdraw()-withdrawResp: ", withdrawResp)
+	log.Println("hist-repo-Withdraw()-withdrawTotal: ", withdrawTotal, "refl: ", reflect.TypeOf(withdrawTotal))
+	log.Println("hist-repo-Withdraw()-withdrawResp: ", withdrawResp, "refl: ", reflect.TypeOf(withdrawResp))
 
 	//сравниваем наш баланс с запросом
 	if withdrawTotal < withdrawResp || withdrawResp < 0 {

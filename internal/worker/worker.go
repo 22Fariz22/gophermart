@@ -6,6 +6,7 @@ import (
 	"github.com/22Fariz22/gophermart/internal/config"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
+	"log"
 	"sync"
 	"time"
 )
@@ -77,30 +78,30 @@ func (w *Pool) AddJob(arr []*entity.Order) error {
 func (w *Pool) RunWorkers(count int) {
 	fmt.Println("start RunWorkers()")
 	for i := 0; i < count; i++ {
-		fmt.Println("start RunWorkers() for... count")
+		log.Println("start RunWorkers() for... count")
 		w.wg.Add(1)
 		go func() {
-			fmt.Println("RunWorkers in go func")
+			log.Println("RunWorkers in go func")
 			defer w.wg.Done()
 			for {
 				select {
 				case <-w.shutDown:
-					fmt.Println("case <-w.shutDown.")
+					fmt.Println("RunWorkers-case <-w.shutDown.")
 					//w.l.Info("channels are shutdown.")
 					return
 				case orders, ok := <-w.mainCh:
-					fmt.Println("case <-w.mainCh.")
+					log.Println("RunWorkers-case <-w.mainCh.")
 					if !ok {
-						fmt.Println("case <-w.mainCh !ok")
+						log.Println("RunWorkers-case <-w.mainCh !ok")
 						return
 					}
-					fmt.Println("SendToAccrualBox")
+					log.Println("RunWorkers-SendToAccrualBox()")
 					respAccrual, err := w.repository.SendToAccrualBox(w.l, w.cfg, orders.orders)
 					if err != nil {
-						fmt.Println("SendToAccrualBox err")
+						log.Println("RunWorkers-SendToAccrualBox err")
 						w.l.Info("err in SendToAccrualBox():", err)
 					}
-					fmt.Println("respAccrual: ", respAccrual)
+					log.Println("RunWorkers-respAccrual: ", respAccrual)
 				}
 			}
 		}()
