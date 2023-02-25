@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -87,6 +88,12 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 
 	// проходимся по списку ордеров и обращаемся к accrual system
 	for _, v := range orders {
+		u_id, err := strconv.Atoi(v.UserID)
+		if err != nil {
+			l.Error("worker-repo-SendToAccrualBox()-atoi: ", err)
+			return nil, err
+		}
+
 		reqURL.Path = path.Join("/api/orders/", v.Number)
 		fmt.Println("reqURL.String()", reqURL.String())
 
@@ -114,7 +121,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 				Order:   v.Number,
 				Status:  "INVALID",
 				Accrual: 0,
-			}); err != nil {
+			}, u_id); err != nil {
 				return nil, err // определить какой error
 			}
 		}
@@ -128,7 +135,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 			}
 
 			//do update
-			update(w, l, resAccrSys, v.UserID)
+			update(w, l, resAccrSys, u_id)
 		}
 
 		if r.StatusCode == 429 {
