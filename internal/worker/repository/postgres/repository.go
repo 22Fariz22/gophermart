@@ -41,15 +41,17 @@ func (w *WorkerRepository) CheckNewOrders(l logger.Interface) ([]*entity.Order, 
 
 	for rows.Next() {
 		order := new(entity.Order)
-		err := rows.Scan(&order.Number)
+		err := rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
 			l.Error("err rows.Scan(): ", err)
 			return nil, err
 		}
-		out = append(out, order)
-		fmt.Println("out rows: ", out)
-	}
+		log.Println("worker-repo-CheckNewOrders()-rows.Next()-order: ", order)
 
+		out = append(out, order)
+
+	}
+	log.Println("worker-repo-CheckNewOrders()-rows.Next()-out: ", out)
 	return out, nil
 }
 
