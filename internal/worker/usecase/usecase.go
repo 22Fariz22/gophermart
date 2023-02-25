@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/22Fariz22/gophermart/internal/config"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/internal/worker"
 	"github.com/22Fariz22/gophermart/pkg/logger"
@@ -24,9 +25,9 @@ func (w *WorkerUseCase) CheckNewOrders(l logger.Interface) ([]*entity.Order, err
 
 }
 
-func (w *WorkerUseCase) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
+func (w *WorkerUseCase) SendToAccrualBox(l logger.Interface, cfg *config.Config, orders []*entity.Order) ([]*entity.History, error) {
 	log.Println("worker-uc-SendToAccrualBox().")
-	return w.WorkerRepo.SendToAccrualBox(l, orders)
+	return w.WorkerRepo.SendToAccrualBox(l, cfg, orders)
 }
 
 //func (w *WorkerUseCase) SendToWaitListChannels() {

@@ -23,8 +23,8 @@ func NewHandler(useCase history.UseCase, l logger.Interface) *Handler {
 }
 
 type BalanceResponce struct {
-	Current   int `json:"current"`
-	Withdrawn int `json:"withdrawn"`
+	Current   float64 `json:"current"`
+	Withdrawn float64 `json:"withdrawn"`
 }
 
 func (h *Handler) GetBalance(c *gin.Context) {
@@ -47,14 +47,14 @@ func (h *Handler) GetBalance(c *gin.Context) {
 
 func toBalanceResponce(u *entity.User) *BalanceResponce {
 	return &BalanceResponce{
-		Current:   u.BalanceTotal,
-		Withdrawn: u.WithdrawTotal,
+		Current:   float64(u.BalanceTotal) / 100,
+		Withdrawn: float64(u.WithdrawTotal) / 100,
 	}
 }
 
 type InputWithdraw struct {
-	Order string `json:"order"`
-	Sum   int    `json:"sum"`
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
 }
 
 func (h *Handler) Withdraw(c *gin.Context) {
@@ -67,7 +67,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, inp.Sum)
+	err := h.useCase.Withdraw(c.Request.Context(), h.l, user, inp.Order, int(inp.Sum*100))
 	if err != nil {
 		if err == history.ErrNotEnoughFunds { //если не достаточно баллов
 			h.l.Info("Not Enough Funds")
@@ -83,9 +83,9 @@ func (h *Handler) Withdraw(c *gin.Context) {
 }
 
 type HistoryResp struct {
-	Order       string `json:"order"`
-	Sum         int    `json:"sum"`
-	ProcessedAt string `json:"processed_at"`
+	Order       string  `json:"order"`
+	Sum         float64 `json:"sum"`
+	ProcessedAt string  `json:"processed_at"`
 }
 
 func (h *Handler) InfoWithdrawal(c *gin.Context) {
@@ -119,7 +119,7 @@ func toHistoryResp(h *entity.History) *HistoryResp {
 
 	return &HistoryResp{
 		Order:       h.Number,
-		Sum:         h.Sum,
+		Sum:         float64(h.Sum) / 100,
 		ProcessedAt: strTime,
 	}
 }

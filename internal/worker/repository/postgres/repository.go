@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/22Fariz22/gophermart/internal/config"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
-	"github.com/spf13/viper"
 	"io"
 	"log"
 	"net/http"
@@ -58,21 +58,20 @@ type respAccr *entity.History
 
 // структура json ответа от accrual sysytem
 type ResAccrualSystem struct {
-	Order   string `json:"order"`
-	Status  string `json:"status"`
-	Accrual int    `json:"accrual"`
+	Order   string  `json:"order"`
+	Status  string  `json:"status"`
+	Accrual float64 `json:"accrual"`
 }
 
 //SendToAccrualBox отправляем запрос accrual system и возвращаем ответ от него
-func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
+func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Config, orders []*entity.Order) ([]*entity.History, error) {
 	log.Println("worker-repo-SendToAccrualBox()")
-	//var arrResAcc arrRespAccr
 
 	//структура json ответа от accrual sysytem
 	var resAccrSys ResAccrualSystem
 
 	// считываем из env переменную ACCRUAL_SYSTEM_ADDRESS
-	accrualSystemAddress := viper.GetString("r")
+	accrualSystemAddress := cfg.AccrualSystemAddress
 
 	//возвращаем мок, если запускаем приложение у себя локально
 	//if accrualSystemAddress == "mock" {
@@ -111,7 +110,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 		// if status == 204: do update set order_status = INVALID, history_status = INVALID
 		if r.StatusCode == 204 {
 			// do update in data in tables orders and history
-			if err := checkStatus(w, l, ResAccrualSystem{
+			if err := update(w, l, ResAccrualSystem{
 				Order:   v.Number,
 				Status:  "INVALID",
 				Accrual: 0,
@@ -129,73 +128,72 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, orders []*entity
 			}
 
 			//do update
-			checkStatus(w, l, resAccrSys)
+			update(w, l, resAccrSys)
 		}
 
 		if r.StatusCode == 429 {
 			sleep, err := time.ParseDuration(r.Header.Get("Retry-After"))
 			if err != nil {
+				l.Error("worker-repo-SendToAccrualBox()-status 429- time.ParseDuration()-err: ", err)
 				time.Sleep(60 * time.Second)
 			}
 			time.Sleep(sleep)
 		}
 
 		if r.StatusCode == 500 {
+			l.Error("worker-repo-SendToAccrualBox()-status500.")
 			return nil, err
 		}
-
 	}
 
 	return nil, nil
 }
 
-func checkStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
-	log.Println("worker-repo-checkStatus()")
-	err := updateWithStatus(w, l, resAcc)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func updateWithStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
 	log.Println("worker-repo-updateWithStatus()")
 
 	ctx := context.Background()
 
 	//UPDATE в таблице History и Orders
-	_, err := w.Pool.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
-							where number = $3`, resAcc.Status, resAcc.Accrual, resAcc.Order)
+	log.Println("worker-repo-updateWithStatus()- start begin tx.")
+	tx, err := w.Pool.Begin(ctx)
+	if err != nil {
+		l.Error("tx err: ", err)
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
+							where number = $3`, resAcc.Status, resAcc.Accrual*100, resAcc.Order)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
+		return err
+	}
+
+	// надо ли делать UPDATE в history???
+
+	log.Println("worker-repo-updateWithStatus().-tx commit.")
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		l.Error("worker-repo-updateWithStatus() -tx.commit err: ", err)
 		return err
 	}
 
 	return nil
 }
 
-func mockResponse(l logger.Interface, orders []*entity.Order) ([]*entity.History, error) {
-	fmt.Println("mockResponse().")
-
-	var arrRA arrRespAccr
-
-	for _, v := range orders {
-		fmt.Println("range v in orders: ", v)
-		respAcc := entity.History{
-			ID:     v.ID,
-			UserID: v.UserID,
-			Number: v.Number,
-			Status: "PROCESSED",
-			Sum:    777,
-		}
-		arrRA = append(arrRA, &respAcc)
-	}
-
-	fmt.Println("ArrRA: ", arrRA)
-	return arrRA, nil
-}
-
 //func (w *WorkerRepository) SendToWaitListChannels() {
 //	//TODO implement me
 //	panic("implement me")
+//}
+
+//func checkStatus(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+//	log.Println("worker-repo-checkStatus()")
+//	err := updateWithStatus(w, l, resAcc)
+//	if err != nil {
+//		l.Error("worker-repo-checkStatus()-updateWithStatus()-err",err)
+//		return err
+//	}
+//	return nil
 //}

@@ -17,10 +17,10 @@ import (
 
 type Order struct {
 	//ID         string    `json:"id"`
-	Number     string `json:"number"`
-	Status     string `json:"status"`
-	Accrual    uint32 `json:"accrual,omitempty"`
-	UploadedAt string `json:"uploaded_at"`
+	Number     string  `json:"number"`
+	Status     string  `json:"status"`
+	Accrual    float64 `json:"accrual,omitempty"`
+	UploadedAt string  `json:"uploaded_at"`
 }
 
 type Handler struct {
@@ -103,7 +103,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	log.Println("orfer-handler-toOrders(orders): ", toOrders(orders))
+	log.Println("order-handler-toOrders(orders): ", toOrders(orders))
 	c.JSON(http.StatusOK, toOrders(orders))
 }
 
@@ -127,7 +127,7 @@ func toOrder(o *entity.Order) *Order {
 		//ID:         o.ID,
 		Number:     o.Number,
 		Status:     o.Status,
-		Accrual:    o.Accrual,
+		Accrual:    float64(o.Accrual) / 100,
 		UploadedAt: strTime,
 	}
 }

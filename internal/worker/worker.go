@@ -3,6 +3,7 @@ package worker
 import (
 	"errors"
 	"fmt"
+	"github.com/22Fariz22/gophermart/internal/config"
 	"github.com/22Fariz22/gophermart/internal/entity"
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"sync"
@@ -16,9 +17,10 @@ type Pool struct {
 	shutDown   chan struct{}
 	mainCh     chan workerData
 	repository UseCase
+	cfg        *config.Config
 }
 
-func NewWorkerPool(repo UseCase, l logger.Interface) *Pool {
+func NewWorkerPool(repo UseCase, l logger.Interface, cfg *config.Config) *Pool {
 	return &Pool{
 		l:          l,
 		wg:         sync.WaitGroup{},
@@ -26,6 +28,7 @@ func NewWorkerPool(repo UseCase, l logger.Interface) *Pool {
 		shutDown:   make(chan struct{}),
 		mainCh:     make(chan workerData, 10),
 		repository: repo,
+		cfg:        cfg,
 	}
 }
 
@@ -34,8 +37,8 @@ type workerData struct {
 }
 
 //  функция которая каждые 2 мин забирает из таблицы ордеры со статусом NEW и кладет их в каналы
-func CollectNewOrders(uc UseCase, l logger.Interface) []*entity.Order {
-	workers := NewWorkerPool(uc, l)
+func CollectNewOrders(uc UseCase, l logger.Interface, cfg *config.Config) []*entity.Order {
+	workers := NewWorkerPool(uc, l, cfg)
 
 	workers.RunWorkers(5)
 	defer workers.Stop()
@@ -91,7 +94,7 @@ func (w *Pool) RunWorkers(count int) {
 						return
 					}
 					fmt.Println("SendToAccrualBox")
-					respAccrual, err := w.repository.SendToAccrualBox(w.l, orders.orders)
+					respAccrual, err := w.repository.SendToAccrualBox(w.l, w.cfg, orders.orders)
 					if err != nil {
 						fmt.Println("SendToAccrualBox err")
 						w.l.Info("err in SendToAccrualBox():", err)

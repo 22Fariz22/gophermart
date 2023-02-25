@@ -105,7 +105,7 @@ func (a *App) Run() error {
 	}
 	log.Println("app-a.httpServer:,", a.httpServer)
 
-	//go worker.CollectNewOrders(a.workerUC, l) //запуск по тикеру
+	go worker.CollectNewOrders(a.workerUC, l, a.cfg) //запуск по тикеру
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil {
