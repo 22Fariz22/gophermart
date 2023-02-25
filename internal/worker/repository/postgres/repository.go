@@ -128,7 +128,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 			}
 
 			//do update
-			update(w, l, resAccrSys)
+			update(w, l, resAccrSys, v.UserID)
 		}
 
 		if r.StatusCode == 429 {
@@ -149,7 +149,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 	return nil, nil
 }
 
-func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
+func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem, u_id int) error {
 	log.Println("worker-repo-updateWithStatus()")
 	log.Println("worker-repo-updateWithStatus()-resAcc: ", resAcc)
 
@@ -164,8 +164,17 @@ func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) er
 	}
 	defer tx.Rollback(ctx)
 
+	// добавлякем в таблицу orders
 	_, err = tx.Exec(ctx, `UPDATE orders SET order_status =  $1, accrual = $2
-							where number = $3`, resAcc.Status, resAcc.Accrual*100, resAcc.Order)
+							where number = $3`, resAcc.Status, int(resAcc.Accrual*100), resAcc.Order)
+	if err != nil {
+		l.Error("error in Exec UPDATE: ", err)
+		return err
+	}
+
+	// добовляем в таблицу user
+	_, err = tx.Exec(ctx, `UPDATE user SET balance_total =  $1
+							where user_id = $2`, int(resAcc.Accrual*100), u_id)
 	if err != nil {
 		l.Error("error in Exec UPDATE: ", err)
 		return err
