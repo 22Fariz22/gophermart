@@ -151,6 +151,7 @@ func (w *WorkerRepository) SendToAccrualBox(l logger.Interface, cfg *config.Conf
 
 func update(w *WorkerRepository, l logger.Interface, resAcc ResAccrualSystem) error {
 	log.Println("worker-repo-updateWithStatus()")
+	log.Println("worker-repo-updateWithStatus()-resAcc: ", resAcc)
 
 	ctx := context.Background()
 
