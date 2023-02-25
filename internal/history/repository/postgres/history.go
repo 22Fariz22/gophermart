@@ -8,6 +8,7 @@ import (
 	"github.com/22Fariz22/gophermart/pkg/logger"
 	"github.com/22Fariz22/gophermart/pkg/postgres"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"log"
 )
 
 type HistoryRepository struct {
@@ -44,6 +45,7 @@ func (h *HistoryRepository) GetBalance(ctx context.Context, l logger.Interface, 
 
 func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, user *entity.User,
 	number string, withdrawResp int) error {
+	log.Println("hist-repo-Withdraw().")
 	withdrawTotal := 0
 
 	// узнаем сколько всего баллов
@@ -53,6 +55,8 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		l.Error("history-repo-Get()-err: ", err)
 		return err
 	}
+	log.Println("hist-repo-Withdraw()-withdrawTotal: ", withdrawTotal)
+	log.Println("hist-repo-Withdraw()-withdrawResp: ", withdrawResp)
 
 	//сравниваем наш баланс с запросом
 	if withdrawTotal < withdrawResp || withdrawResp < 0 {
@@ -60,6 +64,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		return history.ErrNotEnoughFunds
 	}
 
+	log.Println("hist-repo-Withdraw()-start tx begin.")
 	tx, err := h.Pool.Begin(ctx)
 	if err != nil {
 		l.Error("tx err: ", err)
@@ -97,6 +102,7 @@ func (h *HistoryRepository) Withdraw(ctx context.Context, l logger.Interface, us
 		l.Error("commit err: ", err)
 		return err
 	}
+	log.Println("hist-repo-Withdraw()-end tx.Commit().")
 
 	return nil
 }
