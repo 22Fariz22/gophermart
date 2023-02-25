@@ -12,7 +12,7 @@ func main() {
 
 	log.Println("cfg from main: ", cfg)
 
-	log.Println("len(os.Args): ", len(os.Args))
+	log.Println("len(os.Args) ", len(os.Args))
 	for _, arg := range os.Args[1:] {
 		log.Println("arg: ", arg)
 	}

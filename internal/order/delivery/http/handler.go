@@ -103,7 +103,7 @@ func (h *Handler) GetOrders(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
+	log.Println("orfer-handler-toOrders(orders): ", toOrders(orders))
 	c.JSON(http.StatusOK, toOrders(orders))
 }
 

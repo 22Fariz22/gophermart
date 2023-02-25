@@ -51,12 +51,19 @@ func (m *AuthMiddleware) Handle(c *gin.Context) {
 	//	c.AbortWithStatus(http.StatusUnauthorized)
 	//	return
 	//}
+	var token string
+
+	if headerParts[0] == "Bearer" && len(headerParts) == 2 {
+		token = headerParts[1]
+	} else if len(headerParts) == 1 {
+		token = headerParts[0]
+	}
 
 	//splitToken := strings.Split(authHeader, "Bearer ")
 	//authHeader = strings.TrimSpace(splitToken[1])
 	//log.Println("middlw-authHeader after split:", authHeader)
 
-	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, headerParts[0])
+	user, err := m.usecase.ParseToken(c.Request.Context(), m.l, token)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == auth.ErrInvalidAccessToken {
